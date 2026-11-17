@@ -286,23 +286,17 @@ export const SynopticCanvas: React.FC = () => {
         </button>
       </div>
 
-      {/* Top Right Fullscreen Button */}
+      {/* Top Right Fullscreen Icon Button (Icon only) */}
       <div className="absolute top-3 right-3 flex items-center gap-2 z-[1001]">
         <button
           onClick={toggleFullscreen}
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen View"}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070e1b]/95 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-semibold shadow-xl transition-all active:scale-95 hover:border-cyan-400"
+          title={isFullscreen ? "Exit Fullscreen (Esc)" : "Fullscreen Simulation View"}
+          className="p-2 rounded-lg bg-[#070e1b]/95 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 font-mono shadow-xl transition-all active:scale-90 hover:border-cyan-400 hover:text-cyan-200"
         >
           {isFullscreen ? (
-            <>
-              <Minimize className="w-4 h-4 text-cyan-400" />
-              <span>EXIT FULLSCREEN</span>
-            </>
+            <Minimize className="w-4 h-4 text-cyan-400" />
           ) : (
-            <>
-              <Maximize className="w-4 h-4 text-cyan-400" />
-              <span>FULLSCREEN SIMULATION</span>
-            </>
+            <Maximize className="w-4 h-4 text-cyan-400" />
           )}
         </button>
       </div>
