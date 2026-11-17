@@ -13,7 +13,9 @@ import {
   Flame, 
   Radio,
   Sliders,
-  RefreshCw
+  RefreshCw,
+  ExternalLink,
+  Crosshair
 } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
@@ -46,6 +48,11 @@ export const TopHeader: React.FC = () => {
     a.download = `CyberQuant_Telemetry_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const openDedicatedAttackConsole = () => {
+    const attackUrl = `${window.location.origin}/#attacks`;
+    window.open(attackUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -174,6 +181,16 @@ export const TopHeader: React.FC = () => {
 
       {/* Control Actions */}
       <div className="flex items-center gap-2">
+        {/* Launch Dedicated Attack Console in Separate Window */}
+        <button
+          onClick={openDedicatedAttackConsole}
+          title="Open Dedicated Adversary Attack Engine in a Separate Window"
+          className="px-2.5 py-1.5 rounded bg-red-950/40 border border-red-500/50 text-red-300 hover:bg-red-900/50 hover:text-red-200 transition-all flex items-center gap-1.5 font-mono text-xs shadow-sm hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+        >
+          <Crosshair className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+          <span className="font-semibold">ATTACK CONSOLE ↗</span>
+        </button>
+
         {/* Play/Pause */}
         <button
           onClick={togglePause}

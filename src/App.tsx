@@ -18,8 +18,40 @@ import { AttackEnginePanel } from './components/cyber/AttackEnginePanel';
 export function App() {
   const tick = useGridStore((s) => s.tick);
   const activeNavTab = useCyberStore((s) => s.activeNavTab);
+  const setNavTab = useCyberStore((s) => s.setNavTab);
   const fetchInitialData = useCyberStore((s) => s.fetchInitialData);
   const lastTimeRef = useRef<number>(performance.now());
+
+  // URL / Route synchronization: Supports direct links such as http://localhost:5173/attacks or #/attacks
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      const route = hash || path;
+
+      if (route === 'attack' || route === 'attacks' || route === 'attack-engine') {
+        setNavTab('attacks');
+      } else if (route === 'alerts' || route === 'risk-alerts') {
+        setNavTab('alerts');
+      } else if (route === 'financial' || route === 'financial-impact') {
+        setNavTab('financial');
+      } else if (route === 'analytics' || route === 'loss-analytics') {
+        setNavTab('analytics');
+      } else if (route === 'ai' || route === 'assistant') {
+        setNavTab('ai');
+      } else if (route === 'grid' || route === '') {
+        setNavTab('grid');
+      }
+    };
+
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, [setNavTab]);
 
   // Connect to CyberQuant WebSocket and fetch initial state
   useEffect(() => {

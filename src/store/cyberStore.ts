@@ -71,7 +71,16 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
   isMuted: false,
   isConnected: false,
 
-  setNavTab: (tab) => set({ activeNavTab: tab }),
+  setNavTab: (tab) => {
+    set({ activeNavTab: tab });
+    // Keep browser URL address synchronously in sync
+    try {
+      const targetHash = tab === 'grid' ? '' : `#/${tab}`;
+      if (window.location.hash !== targetHash) {
+        window.history.replaceState(null, '', window.location.pathname + targetHash);
+      }
+    } catch (e) {}
+  },
   selectIncident: (incident) => set({ selectedIncident: incident }),
   selectAlert: (alert) => set({ selectedAlert: alert }),
   toggleMute: () => set((s) => ({ isMuted: !s.isMuted })),
