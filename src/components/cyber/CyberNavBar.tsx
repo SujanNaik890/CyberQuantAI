@@ -32,7 +32,7 @@ export const CyberNavBar: React.FC = () => {
           }`}
         >
           <Grid className="w-3.5 h-3.5" />
-          <span>GRID ATLAS</span>
+          <span>CYBER QUANT GRID</span>
         </button>
 
         <button

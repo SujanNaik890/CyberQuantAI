@@ -33,7 +33,7 @@ export const TopHeader: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `GridAtlas_Telemetry_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    a.download = `CyberQuant_Telemetry_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -51,7 +51,7 @@ export const TopHeader: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono font-bold tracking-wider text-base text-slate-100 flex items-center gap-1.5">
-                GRID<span className="text-cyan-400">ATLAS</span>
+                CYBER<span className="text-cyan-400">QUANT</span>
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
                 EMS-SYNOPTIC
