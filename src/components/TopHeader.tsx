@@ -162,7 +162,7 @@ export const TopHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* Control Actions & Master Contingency */}
+      {/* Control Actions */}
       <div className="flex items-center gap-2">
         {/* Play/Pause */}
         <button
@@ -197,16 +197,6 @@ export const TopHeader: React.FC = () => {
 
         {/* Cyber Threat Notification Bell */}
         <NotificationBell />
-
-        {/* Master Contingency Injection Button */}
-        <button
-          onClick={triggerMasterContingency}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-500/50 text-rose-300 font-mono text-xs font-semibold shadow-[0_0_12px_rgba(244,63,94,0.3)] transition-all active:scale-95"
-        >
-          <Flame className="w-4 h-4 text-rose-400 animate-pulse" />
-          <span className="hidden sm:inline">N-2 TRIP INJECTION</span>
-          <span className="sm:hidden">TRIP</span>
-        </button>
       </div>
     </header>
   );

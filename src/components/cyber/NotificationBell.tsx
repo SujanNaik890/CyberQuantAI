@@ -15,15 +15,6 @@ export const NotificationBell: React.FC = () => {
   return (
     <div className="relative">
       <div className="flex items-center gap-1.5">
-        {/* Audio Mute Toggle */}
-        <button
-          onClick={toggleMute}
-          title={isMuted ? "Unmute Alarm" : "Mute Alarm"}
-          className="p-1.5 rounded bg-[#0c1527] border border-[#1e293b] text-slate-400 hover:text-cyan-300 transition-colors"
-        >
-          {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
-        </button>
-
         {/* Bell Icon */}
         <button
           onClick={() => setIsOpen(!isOpen)}
