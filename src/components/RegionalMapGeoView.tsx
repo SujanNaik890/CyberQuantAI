@@ -63,11 +63,12 @@ export const RegionalMapGeoView: React.FC = () => {
         className="w-full h-full"
         zoomControl={false}
       >
-        {/* Dark Matter / Cyber Basemap Tiles */}
+        {/* OpenStreetMap Dark / Cyber Basemap Tiles (No API key required) */}
         <TileLayer
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
+          className="map-tiles-cyber"
         />
 
         {/* Transmission Lines on Real Geographic Terrain */}

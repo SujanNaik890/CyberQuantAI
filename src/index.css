@@ -37,3 +37,8 @@
 .glow-amber {
   box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
 }
+
+/* Invert and tone OpenStreetMap tiles into a high-contrast dark cyber theme */
+.map-tiles-cyber {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
