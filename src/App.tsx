@@ -86,10 +86,9 @@ export function App() {
             {/* Left Dispatch & Asset Sector Sidebar */}
             <LeftSidebar />
 
-            {/* Center Viewport: Upper Synoptic Canvas + Lower Branch Telemetry Table */}
+            {/* Center Viewport: Synoptic Canvas */}
             <main className="flex-1 flex flex-col min-w-0 bg-[#050b14] overflow-hidden">
               <SynopticCanvas />
-              <TelemetryTable />
             </main>
 
             {/* Right Station Inspector, Dynamic Oscilloscope & Event Log */}

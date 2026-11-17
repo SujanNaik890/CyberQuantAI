@@ -227,10 +227,10 @@ export const SynopticCanvas: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full bg-[#050b14] overflow-hidden select-none border-b border-[#1e293b] transition-all duration-300 ${
+      className={`relative w-full bg-[#050b14] overflow-hidden select-none transition-all duration-300 ${
         isFullscreen
           ? 'fixed inset-0 z-[9999] h-screen w-screen border-none'
-          : 'h-[56vh] min-h-[380px]'
+          : 'flex-1 h-full min-h-0'
       }`}
     >
       {/* 3D vs MAP vs 2D Render Mode */}
