@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGridStore } from '../store/gridStore';
+import { useCyberStore } from '../store/cyberStore';
 import { NotificationBell } from './cyber/NotificationBell';
 import { 
   Activity, 
@@ -11,7 +12,8 @@ import {
   Download, 
   Flame, 
   Radio,
-  Sliders
+  Sliders,
+  RefreshCw
 } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
@@ -22,10 +24,18 @@ export const TopHeader: React.FC = () => {
   const triggerMasterContingency = useGridStore((s) => s.triggerMasterContingency);
   const exportGridStateJSON = useGridStore((s) => s.exportGridStateJSON);
   const setNominalFreq = useGridStore((s) => s.setNominalFreq);
+  const resetAllGridAndAttacks = useCyberStore((s) => s.resetAllGridAndAttacks);
 
   const freqDiff = telemetry.frequencyHz - telemetry.nominalFreqHz;
   const isFreqCrit = Math.abs(freqDiff) > 1.2;
   const isFreqWarn = Math.abs(freqDiff) > 0.4;
+
+  const handleFullReset = async () => {
+    // 1. Reset powerflow grid physics, transmission lines, generators & loads
+    resetGrid();
+    // 2. Clear backend database & reset cyber attacks, alerts, risk highlights & financial loss counters
+    await resetAllGridAndAttacks();
+  };
 
   const handleExport = () => {
     const jsonStr = exportGridStateJSON();
@@ -179,11 +189,12 @@ export const TopHeader: React.FC = () => {
 
         {/* Reset System */}
         <button
-          onClick={resetGrid}
-          title="Reset Grid to Baseline Preset"
-          className="p-2 rounded bg-[#0c1527] border border-[#1e293b] text-slate-300 hover:text-cyan-400 hover:border-cyan-500/30 transition-colors"
+          onClick={handleFullReset}
+          title="Reset Grid & Cyber Attacks to Normal Baseline"
+          className="px-3 py-1.5 rounded bg-[#0c1527] border border-[#1e293b] text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40 transition-all flex items-center gap-1.5 font-mono text-xs shadow-sm hover:shadow-[0_0_10px_rgba(6,182,212,0.2)]"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden md:inline font-semibold">RESET GRID</span>
         </button>
 
         {/* Export JSON Telemetry */}

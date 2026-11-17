@@ -374,6 +374,21 @@ app.post('/api/reset', (req, res) => {
     DELETE FROM asset_risk_cache;
   `);
   broadcastWSMessage({ type: 'asset_risk_update', payload: [] });
+  broadcastWSMessage({
+    type: 'financial_summary',
+    payload: {
+      totalFinancialExposure: 0,
+      currentIncidentLoss: 0,
+      totalReplacementCost: 0,
+      totalRecoveryCost: 0,
+      totalOperationalCost: 0,
+      totalUnservedImpact: 0,
+      incidentCount: 0,
+      assetExposure: [],
+      incidentExposure: [],
+    },
+  });
+  broadcastWSMessage({ type: 'reset_telemetry', payload: {} });
   res.json({ success: true, message: 'CyberQuant threat and financial telemetry reset.' });
 });
 

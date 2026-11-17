@@ -44,6 +44,8 @@ export interface CyberStore {
     description?: string;
     intensity?: 'low' | 'medium' | 'high' | 'critical';
   }) => Promise<any>;
+  resetCyberThreats: () => void;
+  resetAllGridAndAttacks: () => Promise<void>;
 }
 
 export const useCyberStore = create<CyberStore>((set, get) => ({
@@ -336,5 +338,38 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
       console.error('Failed to launch attack:', err);
       throw err;
     }
+  },
+
+  resetCyberThreats: () => {
+    set({
+      events: [],
+      alerts: [],
+      incidents: [],
+      assetRiskMap: {},
+      notifications: [],
+      selectedIncident: null,
+      selectedAlert: null,
+      financialSummary: {
+        totalFinancialExposure: 0,
+        currentIncidentLoss: 0,
+        totalReplacementCost: 0,
+        totalRecoveryCost: 0,
+        totalOperationalCost: 0,
+        totalUnservedImpact: 0,
+        incidentCount: 0,
+        assetExposure: [],
+        incidentExposure: [],
+      },
+    });
+  },
+
+  resetAllGridAndAttacks: async () => {
+    const host = window.location.hostname || 'localhost';
+    try {
+      await fetch(`http://${host}:3001/api/reset`, { method: 'POST' });
+    } catch (err) {
+      console.warn('Backend reset call encountered error:', err);
+    }
+    get().resetCyberThreats();
   },
 }));

@@ -150,4 +150,5 @@ export type WSMessage =
   | { type: 'alert_acknowledged'; payload: { alertId: string } }
   | { type: 'asset_risk_update'; payload: AssetRiskStatus[] }
   | { type: 'financial_summary'; payload: FinancialSummary }
+  | { type: 'reset_telemetry'; payload: any }
   | { type: 'connection_established'; payload: { serverTime: string } };

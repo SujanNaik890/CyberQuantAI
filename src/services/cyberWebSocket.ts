@@ -49,6 +49,9 @@ export function initCyberWebSocket() {
             case 'financial_summary':
               store.setFinancialSummary(msg.payload);
               break;
+            case 'reset_telemetry':
+              store.resetCyberThreats();
+              break;
           }
         } catch (e) {
           console.error('Failed to parse WebSocket message:', e);
