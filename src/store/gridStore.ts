@@ -51,6 +51,7 @@ export const useGridStore = create<GridStore>((set, get) => ({
     agcActive: true,
     baseDemandScale: 1.0,
     simulationSpeed: 1.0,
+    scadaDispatched: true,
   },
   selectedAsset: { type: 'generator', id: 'GEN-NUC-01' },
   eventLogs: [

@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useGridStore } from '../store/gridStore';
-import { ZoomIn, ZoomOut, Maximize2, Move, Box, Layers } from 'lucide-react';
+import { Box, Layers, MapPin } from 'lucide-react';
 import { Synoptic3DView } from './Synoptic3DView';
+import { RegionalMapGeoView } from './RegionalMapGeoView';
 
 interface Particle {
   lineId: string;
@@ -15,20 +16,18 @@ export const SynopticCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const [viewMode, setViewMode] = useState<'3D' | '2D'>('3D');
+  const [viewMode, setViewMode] = useState<'3D' | 'MAP' | '2D'>('3D');
 
   const generators = useGridStore((s) => s.generators);
   const substations = useGridStore((s) => s.substations);
   const loads = useGridStore((s) => s.loads);
   const lines = useGridStore((s) => s.lines);
   const selectedAsset = useGridStore((s) => s.selectedAsset);
-  const selectAsset = useGridStore((s) => s.selectAsset);
 
   // Pan & Zoom state for 2D mode
-  const [transform, setTransform] = useState({ x: 300, y: 190, scale: 3.8 });
+  const [transform, setTransform] = useState({ x: 300, y: 190, scale: 3.5 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   const particlesRef = useRef<Particle[]>([]);
 
@@ -151,11 +150,13 @@ export const SynopticCanvas: React.FC = () => {
             ? '#f43f5e'
             : util > 0.8
             ? '#f59e0b'
-            : line.voltageKV === 500
+            : line.voltageKV === 400
             ? '#38bdf8'
-            : '#818cf8';
+            : line.voltageKV === 220
+            ? '#818cf8'
+            : '#f59e0b';
           ctx.strokeStyle = color;
-          ctx.lineWidth = isSelected ? 1.4 : line.voltageKV === 500 ? 0.9 : 0.6;
+          ctx.lineWidth = isSelected ? 1.4 : line.voltageKV === 400 ? 1.0 : 0.6;
           ctx.stroke();
         }
       });
@@ -193,7 +194,7 @@ export const SynopticCanvas: React.FC = () => {
         ctx.font = '2px monospace';
         ctx.fillStyle = '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText(node.name, node.x, node.y + 3.8);
+        ctx.fillText(node.name.split(' ')[0], node.x, node.y + 3.8);
       });
 
       ctx.restore();
@@ -206,9 +207,11 @@ export const SynopticCanvas: React.FC = () => {
 
   return (
     <div ref={containerRef} className="relative w-full h-[54vh] min-h-[380px] bg-[#050b14] overflow-hidden select-none border-b border-[#1e293b]">
-      {/* 3D vs 2D Render Mode */}
+      {/* 3D vs MAP vs 2D Render Mode */}
       {viewMode === '3D' ? (
         <Synoptic3DView />
+      ) : viewMode === 'MAP' ? (
+        <RegionalMapGeoView />
       ) : (
         <canvas
           ref={canvasRef}
@@ -224,7 +227,7 @@ export const SynopticCanvas: React.FC = () => {
       )}
 
       {/* Mode Switcher Pills (Top Left) */}
-      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#070e1b]/90 backdrop-blur-md p-1 rounded-lg border border-[#1e293b] font-mono text-xs z-10">
+      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#070e1b]/90 backdrop-blur-md p-1 rounded-lg border border-[#1e293b] font-mono text-xs z-[1001] shadow-xl">
         <button
           onClick={() => setViewMode('3D')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all font-semibold ${
@@ -233,7 +236,17 @@ export const SynopticCanvas: React.FC = () => {
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Box className="w-3.5 h-3.5" /> 3D Synoptic Grid
+          <Box className="w-3.5 h-3.5" /> 3D City & Grid
+        </button>
+        <button
+          onClick={() => setViewMode('MAP')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all font-semibold ${
+            viewMode === 'MAP'
+              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(56,189,248,0.25)]'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" /> Satellite / Map API
         </button>
         <button
           onClick={() => setViewMode('2D')}
@@ -248,9 +261,11 @@ export const SynopticCanvas: React.FC = () => {
       </div>
 
       {/* 3D Controls Hint */}
-      <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-2 bg-[#070e1b]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1e293b] font-mono text-[11px] text-slate-400 z-10">
-        <span className="text-cyan-400 font-bold">3D Orbit:</span> Left-Click + Drag to Rotate • Right-Click to Pan • Scroll to Zoom
-      </div>
+      {viewMode === '3D' && (
+        <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-2 bg-[#070e1b]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1e293b] font-mono text-[11px] text-slate-400 z-10">
+          <span className="text-cyan-400 font-bold">3D Orbit:</span> Left-Click + Drag to Rotate • Right-Click to Pan • Scroll to Zoom
+        </div>
+      )}
     </div>
   );
 };

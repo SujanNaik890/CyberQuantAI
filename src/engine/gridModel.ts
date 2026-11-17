@@ -4,24 +4,26 @@ export interface Generator {
   id: string;
   name: string;
   type: GeneratorType;
-  voltageRating: number; // e.g. 500, 220 kV
+  voltageRating: number;
   pMinMW: number;
   pMaxMW: number;
   curMW: number;
-  targetMW: number; // Setpoint target
+  targetMW: number;
   rampRateMW_s: number;
   marginalCost_MWh: number;
   status: 'online' | 'tripped';
-  connectedBusId: string; // Substation or direct node ID
+  connectedBusId: string;
+  location: string;
+  lat: number;
+  lng: number;
   x: number;
   y: number;
-  // Specific simulation telemetry
   simMetrics: {
-    efficiency: number; // 0-100%
-    primaryParamName: string; // e.g. "Core Temp", "Water Flow", "Wind Velocity", "Solar Irradiance"
+    efficiency: number;
+    primaryParamName: string;
     primaryParamValue: number;
     primaryParamUnit: string;
-    secondaryParamName: string; // e.g. "Neutron Flux", "Head Height", "RPM", "Inverter Temp"
+    secondaryParamName: string;
     secondaryParamValue: number;
     secondaryParamUnit: string;
   };
@@ -34,9 +36,13 @@ export interface Substation {
   lowVoltageKV: number;
   busStatus: 'energized' | 'de-energized';
   activeThroughputMW: number;
-  voltageAngleRad: number; // Bus phase angle theta
+  voltageAngleRad: number;
+  location: string;
+  lat: number;
+  lng: number;
   x: number;
   y: number;
+  distributionTransformers: number; // e.g. 11kV step-down feeders
 }
 
 export type LoadType = 'industrial' | 'residential' | 'commercial';
@@ -47,11 +53,15 @@ export interface LoadCenter {
   type: LoadType;
   baseDemandMW: number;
   curDemandMW: number;
-  priorityTier: 1 | 2 | 3; // 1 = Critical, 2 = Urban, 3 = Heavy Industrial
+  priorityTier: 1 | 2 | 3;
   isShed: boolean;
   connectedBusId: string;
+  location: string;
+  lat: number;
+  lng: number;
   x: number;
   y: number;
+  buildingCount: number;
 }
 
 export interface TransmissionLine {
@@ -84,8 +94,9 @@ export interface GridTelemetry {
   frequencyDeltaHz: number;
   nominalFreqHz: 50.00 | 60.00;
   agcActive: boolean;
-  baseDemandScale: number; // 0.5 to 1.5
+  baseDemandScale: number;
   simulationSpeed: number;
+  scadaDispatched: boolean;
 }
 
 export interface GridScenario {

@@ -1,19 +1,19 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGridStore } from '../store/gridStore';
 import { Generator, Substation, LoadCenter, TransmissionLine } from '../engine/gridModel';
 
 // ==================== 1. 3D GENERATOR MODELS ====================
 
-// Nuclear Reactor (Containment Dome + Cooling Towers + Steam Plumes)
+// Nuclear Reactor (Kaiga NPCIL)
 const NuclearModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isSelected }) => {
   const steamRef = useRef<THREE.Group>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (steamRef.current && isOnline) {
       steamRef.current.children.forEach((child, i) => {
         child.position.y += delta * (1.2 + i * 0.4);
@@ -31,29 +31,23 @@ const NuclearModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, 
       position={[gen.x, 0, gen.y]} 
       onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'generator', id: gen.id }); }}
     >
-      {/* Containment Dome */}
       <mesh position={[0, 1.5, 0]} castShadow>
         <sphereGeometry args={[2.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshStandardMaterial color={isSelected ? '#38bdf8' : isOnline ? '#0284c7' : '#475569'} roughness={0.3} metalness={0.7} />
       </mesh>
-      {/* Reactor Base Ring */}
       <mesh position={[0, 0.5, 0]}>
         <cylinderGeometry args={[2.5, 2.7, 1, 32]} />
         <meshStandardMaterial color="#1e293b" metalness={0.8} />
       </mesh>
-
-      {/* Cooling Tower 1 */}
       <mesh position={[-3, 2, -1.5]}>
         <cylinderGeometry args={[1.0, 1.6, 4, 24]} />
         <meshStandardMaterial color="#334155" roughness={0.6} />
       </mesh>
-      {/* Cooling Tower 2 */}
       <mesh position={[-3, 2, 1.5]}>
         <cylinderGeometry args={[1.0, 1.6, 4, 24]} />
         <meshStandardMaterial color="#334155" roughness={0.6} />
       </mesh>
 
-      {/* Animated Steam Clouds */}
       <group ref={steamRef}>
         <mesh position={[-3, 3.5, -1.5]}>
           <sphereGeometry args={[0.7, 12, 12]} />
@@ -65,16 +59,14 @@ const NuclearModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, 
         </mesh>
       </group>
 
-      {/* Cyber Base Platform */}
       <mesh position={[0, 0.1, 0]}>
         <cylinderGeometry args={[5, 5.2, 0.2, 32]} />
         <meshBasicMaterial color={isSelected ? '#38bdf8' : isOnline ? '#0369a1' : '#e11d48'} wireframe />
       </mesh>
 
-      {/* Floating 3D HUD Label */}
-      <Html position={[0, 4.8, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-cyan-500/50 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-cyan-300 font-bold whitespace-nowrap">{gen.name}</div>
+      <Html position={[0, 5.2, 0]} center distanceFactor={45}>
+        <div className="bg-[#070e1b]/95 border border-cyan-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-cyan-300 font-bold whitespace-nowrap">{gen.name}</div>
           <div className="text-[9px] text-slate-300">
             {isOnline ? `${Math.round(gen.curMW)} MW • ${gen.simMetrics.primaryParamValue.toFixed(1)}°C` : 'OFFLINE'}
           </div>
@@ -84,13 +76,13 @@ const NuclearModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, 
   );
 };
 
-// Hydroelectric Dam (Dam Wall + Reservoirs + Penstock Water Flow)
+// Hydro Dam (Sharavathi KPCL)
 const HydroModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isSelected }) => {
   const waterRef = useRef<THREE.Mesh>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (waterRef.current && isOnline) {
       waterRef.current.position.y = 1.0 + Math.sin(Date.now() / 300) * 0.15;
     }
@@ -101,13 +93,11 @@ const HydroModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
       position={[gen.x, 0, gen.y]} 
       onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'generator', id: gen.id }); }}
     >
-      {/* Massive Concrete Dam Wall */}
       <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}>
         <boxGeometry args={[7, 5, 2.5]} />
         <meshStandardMaterial color={isSelected ? '#38bdf8' : '#334155'} roughness={0.8} />
       </mesh>
 
-      {/* Penstocks (3 heavy pipes) */}
       {[-1.5, 0, 1.5].map((offset, i) => (
         <mesh key={i} position={[offset, 1.8, 1.2]} rotation={[Math.PI / 5, 0, 0]}>
           <cylinderGeometry args={[0.4, 0.4, 3.5, 16]} />
@@ -115,27 +105,24 @@ const HydroModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
         </mesh>
       ))}
 
-      {/* Powerhouse Turbine Station */}
       <mesh position={[0, 0.8, 2.4]}>
         <boxGeometry args={[4.5, 1.6, 2]} />
         <meshStandardMaterial color="#1e293b" metalness={0.6} />
       </mesh>
 
-      {/* Tailrace Water Outlet */}
       <mesh ref={waterRef} position={[0, 0.2, 3.8]}>
         <planeGeometry args={[5, 3]} />
         <meshStandardMaterial color="#0ea5e9" transparent opacity={0.7} roughness={0.1} />
       </mesh>
 
-      {/* Base ring */}
       <mesh position={[0, 0.1, 0]}>
         <cylinderGeometry args={[5, 5.2, 0.2, 32]} />
         <meshBasicMaterial color={isSelected ? '#38bdf8' : isOnline ? '#06b6d4' : '#e11d48'} wireframe />
       </mesh>
 
       <Html position={[0, 5.5, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-cyan-500/50 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-cyan-300 font-bold whitespace-nowrap">{gen.name}</div>
+        <div className="bg-[#070e1b]/95 border border-cyan-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-cyan-300 font-bold whitespace-nowrap">{gen.name}</div>
           <div className="text-[9px] text-slate-300">
             {isOnline ? `${Math.round(gen.curMW)} MW • ${gen.simMetrics.primaryParamValue.toFixed(0)} m³/s` : 'OFFLINE'}
           </div>
@@ -145,7 +132,7 @@ const HydroModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
   );
 };
 
-// Solar PV Array (Solar Panel Modules + Central Inverter Station)
+// Solar Mega Park (Pavagada 2GW)
 const SolarModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isSelected }) => {
   const panelRef = useRef<THREE.Group>(null);
   const isOnline = gen.status === 'online';
@@ -153,7 +140,6 @@ const SolarModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
 
   useFrame(() => {
     if (panelRef.current && isOnline) {
-      // Gentle sun tracking tilt
       const tilt = Math.sin(Date.now() / 2000) * 0.15;
       panelRef.current.rotation.x = -Math.PI / 6 + tilt;
     }
@@ -164,19 +150,16 @@ const SolarModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
       position={[gen.x, 0, gen.y]} 
       onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'generator', id: gen.id }); }}
     >
-      {/* 3x3 Grid of Solar Tracker Panels */}
       <group ref={panelRef}>
-        {[-2, 0, 2].map((x) =>
-          [-1.5, 0, 1.5].map((z) => (
+        {[-2.5, 0, 2.5].map((x) =>
+          [-2, 0, 2].map((z) => (
             <group key={`${x}-${z}`} position={[x, 1.2, z]}>
-              {/* Stand */}
               <mesh position={[0, -0.6, 0]}>
                 <cylinderGeometry args={[0.08, 0.08, 1.2, 8]} />
                 <meshStandardMaterial color="#64748b" metalness={0.9} />
               </mesh>
-              {/* PV Panel Face */}
               <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <boxGeometry args={[1.6, 1.1, 0.06]} />
+                <boxGeometry args={[1.8, 1.3, 0.06]} />
                 <meshStandardMaterial 
                   color={isSelected ? '#38bdf8' : isOnline ? '#1e3a8a' : '#1e293b'} 
                   roughness={0.1} 
@@ -188,21 +171,19 @@ const SolarModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
         )}
       </group>
 
-      {/* Central Inverter / Transformer Station */}
-      <mesh position={[0, 0.7, 3.2]}>
-        <boxGeometry args={[1.8, 1.4, 1.2]} />
+      <mesh position={[0, 0.7, 3.8]}>
+        <boxGeometry args={[2.2, 1.4, 1.4]} />
         <meshStandardMaterial color="#334155" metalness={0.7} />
       </mesh>
 
-      {/* Base ring */}
       <mesh position={[0, 0.1, 0]}>
-        <cylinderGeometry args={[5, 5.2, 0.2, 32]} />
+        <cylinderGeometry args={[5.5, 5.7, 0.2, 32]} />
         <meshBasicMaterial color={isSelected ? '#38bdf8' : isOnline ? '#f59e0b' : '#e11d48'} wireframe />
       </mesh>
 
-      <Html position={[0, 4.5, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-amber-500/50 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-amber-300 font-bold whitespace-nowrap">{gen.name}</div>
+      <Html position={[0, 4.8, 0]} center distanceFactor={45}>
+        <div className="bg-[#070e1b]/95 border border-amber-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-amber-300 font-bold whitespace-nowrap">{gen.name}</div>
           <div className="text-[9px] text-slate-300">
             {isOnline ? `${Math.round(gen.curMW)} MW • ${gen.simMetrics.primaryParamValue.toFixed(0)} W/m²` : 'OFFLINE'}
           </div>
@@ -212,7 +193,7 @@ const SolarModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, is
   );
 };
 
-// Wind Turbines (Tower + Nacelle + 3 Spinning Blades)
+// Wind Turbines (Kappatagudda Gadag)
 const WindModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isSelected }) => {
   const rotorRef1 = useRef<THREE.Group>(null);
   const rotorRef2 = useRef<THREE.Group>(null);
@@ -230,17 +211,14 @@ const WindModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isS
 
   const renderTurbine = (pos: [number, number, number], rotorRef: React.RefObject<THREE.Group | null>) => (
     <group position={pos}>
-      {/* Tower */}
       <mesh position={[0, 2.5, 0]}>
         <cylinderGeometry args={[0.2, 0.45, 5, 16]} />
         <meshStandardMaterial color="#e2e8f0" metalness={0.7} roughness={0.3} />
       </mesh>
-      {/* Nacelle */}
       <mesh position={[0, 5, 0.4]} rotation={[Math.PI / 2, 0, 0]}>
         <capsuleGeometry args={[0.3, 0.8, 8, 16]} />
         <meshStandardMaterial color="#cbd5e1" metalness={0.8} />
       </mesh>
-      {/* Rotor Hub & 3 Aerodynamic Blades */}
       <group position={[0, 5, 0.9]} ref={rotorRef}>
         <mesh>
           <sphereGeometry args={[0.35, 16, 16]} />
@@ -267,15 +245,14 @@ const WindModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isS
       {renderTurbine([-2.5, 0, -2], rotorRef2)}
       {renderTurbine([2.5, 0, -1.8], rotorRef3)}
 
-      {/* Cyber Platform */}
       <mesh position={[0, 0.1, 0]}>
         <cylinderGeometry args={[5, 5.2, 0.2, 32]} />
         <meshBasicMaterial color={isSelected ? '#38bdf8' : isOnline ? '#10b981' : '#e11d48'} wireframe />
       </mesh>
 
-      <Html position={[0, 6.5, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-emerald-500/50 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-emerald-300 font-bold whitespace-nowrap">{gen.name}</div>
+      <Html position={[0, 6.8, 0]} center distanceFactor={45}>
+        <div className="bg-[#070e1b]/95 border border-emerald-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-emerald-300 font-bold whitespace-nowrap">{gen.name}</div>
           <div className="text-[9px] text-slate-300">
             {isOnline ? `${Math.round(gen.curMW)} MW • ${gen.simMetrics.primaryParamValue.toFixed(1)} m/s` : 'OFFLINE'}
           </div>
@@ -285,7 +262,7 @@ const WindModel: React.FC<{ gen: Generator; isSelected: boolean }> = ({ gen, isS
   );
 };
 
-// ==================== 2. SUBSTATIONS & LOADS 3D ====================
+// ==================== 2. SUBSTATIONS WITH DISTRIBUTION TRANSFORMERS ====================
 
 const SubstationModel: React.FC<{ sub: Substation; isSelected: boolean }> = ({ sub, isSelected }) => {
   const selectAsset = useGridStore((s) => s.selectAsset);
@@ -295,74 +272,131 @@ const SubstationModel: React.FC<{ sub: Substation; isSelected: boolean }> = ({ s
       position={[sub.x, 0, sub.y]} 
       onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'substation', id: sub.id }); }}
     >
-      {/* Heavy Transformer Banks */}
-      <mesh position={[-1, 1, 0]}>
-        <boxGeometry args={[1.5, 2, 2.2]} />
+      {/* Heavy 400kV Step-down Transformers */}
+      <mesh position={[-1.2, 1.2, 0]}>
+        <boxGeometry args={[1.8, 2.4, 2.6]} />
         <meshStandardMaterial color="#475569" metalness={0.8} />
       </mesh>
-      <mesh position={[1, 1, 0]}>
-        <boxGeometry args={[1.5, 2, 2.2]} />
+      <mesh position={[1.2, 1.2, 0]}>
+        <boxGeometry args={[1.8, 2.4, 2.6]} />
         <meshStandardMaterial color="#475569" metalness={0.8} />
       </mesh>
 
-      {/* High-Voltage Bushings & Insulators */}
-      {[-1.2, 0, 1.2].map((x) => (
-        <mesh key={x} position={[x, 2.5, 0]}>
-          <cylinderGeometry args={[0.15, 0.25, 1.2, 12]} />
+      {/* Bushings & Ceramic Insulators */}
+      {[-1.5, -0.5, 0.5, 1.5].map((x) => (
+        <mesh key={x} position={[x, 2.8, 0]}>
+          <cylinderGeometry args={[0.15, 0.28, 1.4, 12]} />
           <meshStandardMaterial color="#818cf8" metalness={0.9} />
         </mesh>
       ))}
 
-      {/* Perimeter Ground Grid */}
+      {/* 11kV Distribution Switchgear Room */}
+      <mesh position={[0, 0.7, 2.5]}>
+        <boxGeometry args={[4.5, 1.4, 1.8]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.7} />
+      </mesh>
+
+      {/* High-Voltage Switchyard Ground Grid */}
       <mesh position={[0, 0.05, 0]}>
-        <boxGeometry args={[5, 0.1, 4]} />
+        <boxGeometry args={[6, 0.1, 5.5]} />
         <meshBasicMaterial color={isSelected ? '#818cf8' : '#334155'} wireframe />
       </mesh>
 
-      <Html position={[0, 3.8, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-indigo-500/50 px-2 py-0.5 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-indigo-300 font-bold whitespace-nowrap">{sub.name}</div>
-          <div className="text-[9px] text-slate-300">{sub.highVoltageKV}kV • {sub.activeThroughputMW}MW</div>
+      <Html position={[0, 4.4, 0]} center distanceFactor={45}>
+        <div className="bg-[#070e1b]/95 border border-indigo-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-indigo-300 font-bold whitespace-nowrap">{sub.name}</div>
+          <div className="text-[9px] text-slate-300">
+            {sub.highVoltageKV}kV • {sub.activeThroughputMW}MW • {sub.distributionTransformers} Feeders
+          </div>
         </div>
       </Html>
     </group>
   );
 };
 
-const LoadModel: React.FC<{ load: LoadCenter; isSelected: boolean }> = ({ load, isSelected }) => {
+// ==================== 3. GIRCITY PROCEDURAL BENGALURU SKYLINE ====================
+
+// Procedural 3D City Skyline (GitCity architectural paradigm)
+const GitCityBengaluruCluster: React.FC<{ load: LoadCenter; isSelected: boolean }> = ({ load, isSelected }) => {
   const selectAsset = useGridStore((s) => s.selectAsset);
+
+  // Procedural deterministic buildings per load zone
+  const buildings = useMemo(() => {
+    const list: { x: number; z: number; width: number; depth: number; height: number; color: string }[] = [];
+    const count = load.buildingCount;
+    const rngSeed = load.id.length * 13;
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 * 3;
+      const radius = 1.0 + (i % 5) * 1.4;
+      const bx = Math.cos(angle) * radius + ((i % 3) - 1) * 0.8;
+      const bz = Math.sin(angle) * radius + (((i + 1) % 3) - 1) * 0.8;
+
+      // Height influenced by load demand
+      const baseH = (load.curDemandMW / 120);
+      const randFactor = (((i * rngSeed) % 100) / 100);
+      const height = Math.max(2.5, baseH * (0.6 + randFactor * 1.4));
+      const width = 0.8 + ((i % 4) * 0.3);
+      const depth = 0.8 + (((i + 2) % 4) * 0.3);
+
+      // Window glow colors
+      const isWindowLit = !load.isShed && (i % 3 !== 0);
+      const color = load.isShed
+        ? '#334155'
+        : isWindowLit
+        ? i % 4 === 0 ? '#38bdf8' : '#f59e0b'
+        : '#1e293b';
+
+      list.push({ x: bx, z: bz, width, depth, height, color });
+    }
+    return list;
+  }, [load.id, load.buildingCount, load.curDemandMW, load.isShed]);
 
   return (
     <group 
       position={[load.x, 0, load.y]} 
       onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'load', id: load.id }); }}
     >
-      {/* Industrial / City Building Blocks */}
-      <mesh position={[-1, 1.5, -0.8]}>
-        <boxGeometry args={[2, 3, 2]} />
-        <meshStandardMaterial color={isSelected ? '#f59e0b' : '#1e293b'} metalness={0.8} roughness={0.2} />
-      </mesh>
-      <mesh position={[1.2, 2.5, 0.5]}>
-        <boxGeometry args={[1.8, 5, 2.2]} />
-        <meshStandardMaterial color={isSelected ? '#f59e0b' : '#334155'} metalness={0.8} roughness={0.2} />
-      </mesh>
+      {/* City Block Buildings */}
+      {buildings.map((b, idx) => (
+        <group key={idx} position={[b.x, b.height / 2, b.z]}>
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[b.width, b.height, b.depth]} />
+            <meshStandardMaterial 
+              color={isSelected ? '#38bdf8' : b.color} 
+              metalness={0.8} 
+              roughness={0.2} 
+            />
+          </mesh>
+          {/* Lit window streaks on skyscraper faces */}
+          {!load.isShed && (
+            <mesh position={[0, 0, b.depth / 2 + 0.02]}>
+              <planeGeometry args={[b.width * 0.8, b.height * 0.7]} />
+              <meshBasicMaterial color="#fef08a" transparent opacity={0.35} />
+            </mesh>
+          )}
+        </group>
+      ))}
 
+      {/* Urban Foundation & Distribution Grid */}
       <mesh position={[0, 0.05, 0]}>
-        <boxGeometry args={[5, 0.1, 5]} />
+        <cylinderGeometry args={[7, 7.5, 0.1, 32]} />
         <meshBasicMaterial color={load.isShed ? '#f43f5e' : '#f59e0b'} wireframe />
       </mesh>
 
-      <Html position={[0, 4.5, 0]} center distanceFactor={45}>
-        <div className="bg-[#070e1b]/90 border border-amber-500/50 px-2 py-0.5 rounded text-center font-mono pointer-events-none select-none shadow-lg">
-          <div className="text-[10px] text-amber-300 font-bold whitespace-nowrap">{load.name}</div>
-          <div className="text-[9px] text-slate-300">{load.isShed ? 'SHED' : `${Math.round(load.curDemandMW)} MW (Tier ${load.priorityTier})`}</div>
+      <Html position={[0, 8.5, 0]} center distanceFactor={45}>
+        <div className="bg-[#070e1b]/95 border border-amber-500/60 px-2 py-1 rounded text-center font-mono pointer-events-none select-none shadow-xl">
+          <div className="text-[10.5px] text-amber-300 font-bold whitespace-nowrap">{load.name}</div>
+          <div className="text-[9px] text-slate-300">
+            {load.isShed ? 'SHED' : `${Math.round(load.curDemandMW)} MW • Tier ${load.priorityTier} • ${load.buildingCount} Buildings`}
+          </div>
         </div>
       </Html>
     </group>
   );
 };
 
-// ==================== 3. 3D TRANSMISSION LINES & FLOW PARTICLES ====================
+// ==================== 4. 3D TRANSMISSION CORRIDORS ====================
 
 const Transmission3D: React.FC<{ line: TransmissionLine; fromCoord: [number, number, number]; toCoord: [number, number, number] }> = ({
   line,
@@ -376,17 +410,16 @@ const Transmission3D: React.FC<{ line: TransmissionLine; fromCoord: [number, num
   const points = useMemo(() => {
     const start = new THREE.Vector3(...fromCoord);
     const end = new THREE.Vector3(...toCoord);
-    // Add realistic catenary sag or overhead line height
     const mid = new THREE.Vector3()
       .addVectors(start, end)
       .multiplyScalar(0.5);
-    mid.y += 3.5; // Elevate transmission lines
-    start.y += 2.0;
-    end.y += 2.0;
+    mid.y += line.voltageKV === 400 ? 5.5 : 3.5;
+    start.y += 2.5;
+    end.y += 2.5;
 
     const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
     return curve.getPoints(24);
-  }, [fromCoord, toCoord]);
+  }, [fromCoord, toCoord, line.voltageKV]);
 
   const util = Math.abs(line.curFlowMW) / line.thermalLimitMW;
   const isOverloaded = !line.isTripped && util > 1.0;
@@ -396,9 +429,11 @@ const Transmission3D: React.FC<{ line: TransmissionLine; fromCoord: [number, num
     ? '#f43f5e'
     : util > 0.8
     ? '#f59e0b'
-    : line.voltageKV === 500
+    : line.voltageKV === 400
     ? '#38bdf8'
-    : '#818cf8';
+    : line.voltageKV === 220
+    ? '#818cf8'
+    : '#f59e0b';
 
   return (
     <group onClick={(e) => { e.stopPropagation(); selectAsset({ type: 'line', id: line.id }); }}>
@@ -409,13 +444,13 @@ const Transmission3D: React.FC<{ line: TransmissionLine; fromCoord: [number, num
             args={[new Float32Array(points.flatMap((p) => [p.x, p.y, p.z])), 3]}
           />
         </bufferGeometry>
-        <lineBasicMaterial color={lineColor} linewidth={isSelected ? 3 : 1.5} />
+        <lineBasicMaterial color={lineColor} linewidth={isSelected ? 4 : 2} />
       </line>
     </group>
   );
 };
 
-// ==================== 4. MAIN 3D SCENE ORCHESTRATOR ====================
+// ==================== 5. SCENE ROOT ====================
 
 export const Synoptic3DView: React.FC = () => {
   const generators = useGridStore((s) => s.generators);
@@ -437,30 +472,27 @@ export const Synoptic3DView: React.FC = () => {
   return (
     <div className="w-full h-full relative bg-[#050b14] overflow-hidden">
       <Canvas
-        camera={{ position: [0, 65, 75], fov: 45 }}
+        camera={{ position: [0, 85, 110], fov: 45 }}
         shadows
         gl={{ antialias: true }}
       >
         <color attach="background" args={['#050b14']} />
         
-        {/* Cyber Grid Lighting */}
-        <ambientLight intensity={0.65} />
-        <directionalLight position={[40, 60, 40]} intensity={1.2} castShadow />
-        <pointLight position={[0, 20, 0]} intensity={2.0} color="#38bdf8" distance={90} />
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[50, 80, 50]} intensity={1.4} castShadow />
+        <pointLight position={[0, 30, 0]} intensity={2.5} color="#38bdf8" distance={150} />
 
-        {/* Orbit Controls with dampening */}
         <OrbitControls
           enableDamping
           dampingFactor={0.05}
           maxPolarAngle={Math.PI / 2.1}
           minDistance={20}
-          maxDistance={180}
+          maxDistance={250}
         />
 
-        {/* Ground Blueprint Grid */}
-        <gridHelper args={[160, 40, '#0284c7', '#0f172a']} position={[0, -0.05, 0]} />
+        <gridHelper args={[220, 44, '#0284c7', '#0f172a']} position={[0, -0.05, 0]} />
 
-        {/* Generators with specialized 3D models */}
+        {/* 3D Power Plants */}
         {generators.map((gen) => {
           const isSelected = selectedAsset?.type === 'generator' && selectedAsset.id === gen.id;
           if (gen.type === 'nuclear') return <NuclearModel key={gen.id} gen={gen} isSelected={isSelected} />;
@@ -470,7 +502,7 @@ export const Synoptic3DView: React.FC = () => {
           return null;
         })}
 
-        {/* Substations */}
+        {/* 3D Substations with Step-down Transformers */}
         {substations.map((sub) => (
           <SubstationModel
             key={sub.id}
@@ -479,9 +511,9 @@ export const Synoptic3DView: React.FC = () => {
           />
         ))}
 
-        {/* Load Centers */}
+        {/* Bengaluru City 3D Skyline (GitCity Paradigm) */}
         {loads.map((load) => (
-          <LoadModel
+          <GitCityBengaluruCluster
             key={load.id}
             load={load}
             isSelected={selectedAsset?.type === 'load' && selectedAsset.id === load.id}
