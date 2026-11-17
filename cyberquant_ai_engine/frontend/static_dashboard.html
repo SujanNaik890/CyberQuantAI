@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberQuant AI | Threat Explanation &amp; Analysis Assistant</title>
+  <style>
+    :root {
+      --bg-darkest: #040711;
+      --bg-sidebar: #080d1c;
+      --bg-sidebar-card: #0d152b;
+      --bg-chat: #060a16;
+      --bg-card: #0a1124;
+      --bg-card-hover: #101c38;
+      --border: rgba(56, 189, 248, 0.15);
+      --border-light: rgba(56, 189, 248, 0.28);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.16);
+      --blue: #3b82f6;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.16);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.18);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.16);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-darkest);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 40%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.2); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.4); }
+
+    /* ======================================================== */
+    /* LEFT SIDEBAR                                             */
+    /* ======================================================== */
+    .sidebar {
+      width: 320px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .sidebar-top {
+      padding: 18px 16px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+      height: calc(100vh - 120px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(37, 99, 235, 0.35));
+      border: 1px solid var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+      position: relative;
+    }
+    .brand-icon::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      top: -2px;
+      right: -2px;
+      box-shadow: 0 0 8px var(--emerald);
+    }
+    .brand-name {
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+    .brand-subtitle {
+      font-size: 10.5px;
+      color: var(--cyan);
+      font-family: monospace;
+      letter-spacing: 0.5px;
+      margin-top: 1px;
+    }
+
+    .btn-new-chat {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(37, 99, 235, 0.15));
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      color: var(--cyan);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .btn-new-chat:hover {
+      background: var(--cyan);
+      color: #020617;
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* History Section */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+    .section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+    }
+    .btn-clear-history {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .btn-clear-history:hover {
+      color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 2px;
+    }
+
+    .history-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .history-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-light);
+      transform: translateX(2px);
+    }
+    .history-card.active {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.12), rgba(15, 23, 42, 0.6));
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.18);
+    }
+
+    .history-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .history-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow: hidden;
+    }
+    .history-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .history-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 175px;
+    }
+    .history-card.active .history-title {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .history-badge {
+      font-size: 9px;
+      font-weight: 800;
+      font-family: monospace;
+      padding: 2px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .badge-crit { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-high { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-med { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-info { background: rgba(0, 240, 255, 0.15); color: #a5f3fc; border: 1px solid rgba(0, 240, 255, 0.3); }
+
+    .history-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+    .history-time { font-family: monospace; font-size: 10px; }
+    
+    .btn-delete-session {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      padding: 0 4px;
+    }
+    .history-card:hover .btn-delete-session {
+      opacity: 1;
+    }
+    .btn-delete-session:hover {
+      color: var(--red);
+    }
+
+    /* Sidebar Footer */
+    .sidebar-bottom {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(4, 7, 17, 0.85);
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+    .dot-online {
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ======================================================== */
+    /* MAIN CHAT AREA                                           */
+    /* ======================================================== */
+    .chat-container {
+      flex: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-chat);
+      position: relative;
+    }
+
+    /* Top Bar */
+    .chat-header {
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 13, 28, 0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 5;
+    }
+    .chat-title-group h2 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-title-group p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .switch-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .switch-label.active {
+      color: var(--cyan);
+      border-color: rgba(0, 240, 255, 0.5);
+      background: var(--cyan-glow);
+      font-weight: 700;
+    }
+    .header-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .header-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-light);
+    }
+
+    /* Message stream */
+    .messages-stream {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 14px;
+      max-width: 980px;
+      width: 100%;
+    }
+    .message-row.user-row {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+      max-width: 780px;
+    }
+    .message-row.assistant-row {
+      align-self: flex-start;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .avatar-ai {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(37, 99, 235, 0.3));
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+    .avatar-user {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+    }
+
+    .bubble-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .bubble {
+      padding: 18px 22px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .bubble-user {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+      align-self: flex-end;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .bubble-assistant {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      border-bottom-left-radius: 2px;
+      border-top: 2px solid var(--cyan);
+    }
+
+    /* ======================================================== */
+    /* 8 SECTION CARDS & REPORT STYLING                         */
+    /* ======================================================== */
+    .bubble-assistant h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+    }
+    .bubble-assistant p {
+      margin-bottom: 9px;
+      line-height: 1.65;
+    }
+    .bubble-assistant code {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      color: var(--cyan);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    /* Responsive Cyber Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 14px 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.4);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    }
+    .cyber-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    .cyber-table th {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--cyan);
+      padding: 10px 14px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .cyber-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .cyber-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .cyber-table tr:last-child td {
+      border-bottom: none;
+    }
+    hr.cyber-divider {
+      border: none;
+      border-top: 1px dashed rgba(56, 189, 248, 0.25);
+      margin: 16px 0;
+    }
+
+    /* Section Banner Boxes (Sections 1 through 8) */
+    .section-banner {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), rgba(13, 21, 43, 0.6));
+      border-left: 3px solid var(--cyan);
+      border-top: 1px solid rgba(0, 240, 255, 0.2);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+      border-right: 1px solid rgba(0, 240, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-badge {
+      background: var(--cyan);
+      color: #020617;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: monospace;
+      letter-spacing: 0.6px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.4px;
+      margin: 0 !important;
+    }
+
+    .sub-section-title {
+      color: #38bdf8;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin: 14px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed rgba(56, 189, 248, 0.25);
+    }
+
+    .alert-callout {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-left: 4px solid var(--red);
+      padding: 11px 15px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 12.5px;
+      color: #fca5a5;
+      line-height: 1.55;
+    }
+
+    .report-list, .report-num-list {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+    .report-list li, .report-num-list li {
+      margin-bottom: 6px;
+      line-height: 1.6;
+    }
+    .report-num-list li::marker {
+      color: var(--cyan);
+      font-weight: 800;
+    }
+
+    /* Teammate Telemetry HUD Card */
+    .telemetry-card {
+      background: linear-gradient(135deg, #060914, #0b1122);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.12);
+      position: relative;
+    }
+    .telemetry-card::before {
+      content: 'LIVE DETECTION TELEMETRY';
+      position: absolute;
+      top: -10px;
+      left: 18px;
+      background: var(--red);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      font-family: monospace;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.8px;
+    }
+    .telemetry-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .telemetry-id {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--cyan);
+    }
+    .telemetry-source {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .telemetry-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .telemetry-label {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .telemetry-val {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 3px;
+    }
+
+    /* Citations */
+    .citations-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .citation-tag {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #a5f3fc;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-family: monospace;
+    }
+
+    /* Suggested Followups */
+    .followups-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .followup-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .followup-chip:hover {
+      background: var(--cyan-glow);
+      color: var(--cyan);
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+
+    /* ======================================================== */
+    /* BOTTOM INPUT & PROMPT CHIPS                              */
+    /* ======================================================== */
+    .chat-bottom {
+      padding: 14px 32px 20px 32px;
+      background: rgba(8, 13, 28, 0.95);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .quick-prompts-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .quick-prompt-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .quick-prompt-btn:hover {
+      color: #fff;
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+      transform: translateY(-1px);
+    }
+    .quick-prompt-alert {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.06);
+    }
+    .quick-prompt-alert:hover {
+      background: var(--red-glow);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    .input-box-wrapper {
+      display: flex;
+      gap: 10px;
+      background: var(--bg-darkest);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 8px 6px 16px;
+      align-items: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-box-wrapper:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+    }
+    .input-prompt-icon {
+      color: var(--cyan);
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .chat-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, var(--cyan), #0284c7);
+      color: #020617;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-send:hover {
+      background: #22d3ee;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 8px 12px;
+    }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================== -->
+  <!-- LEFT SIDEBAR: INVESTIGATION HISTORY                       -->
+  <!-- ======================================================== -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-name">CyberQuant AI</div>
+          <div class="brand-subtitle">Threat Analysis Module</div>
+        </div>
+      </div>
+
+      <button class="btn-new-chat" onclick="startNewInvestigation()">
+        <span>+</span> New Investigation
+      </button>
+
+      <!-- INVESTIGATION HISTORY -->
+      <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden; margin-top: 4px;">
+        <div class="history-header">
+          <span class="section-label" id="history-count-label">Investigation History (0)</span>
+          <button class="btn-clear-history" onclick="clearAllHistory()" title="Clear saved history">Clear</button>
+        </div>
+        
+        <div class="history-list" id="history-container">
+          <!-- Populated dynamically by renderHistory() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar at bottom of sidebar -->
+    <div class="sidebar-bottom">
+      <div class="status-badge">
+        <span style="color:var(--text-muted)">Detection API:</span>
+        <span style="color:#fff;"><span class="dot dot-online"></span>Online (8000)</span>
+      </div>
+      <div class="status-badge">
+        <span style="color:var(--text-muted)">AI Decision Core:</span>
+        <span id="engine-status" style="color:var(--cyan); font-weight:600;">Active</span>
+      </div>
+      <div style="font-size:10px; color:var(--text-dim); margin-top:6px; display:flex; justify-content:space-between;">
+        <span>Protocol: 8-Section Standard</span>
+        <span>v2.4 SOC</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MAIN CHAT INTERFACE                                       -->
+  <!-- ======================================================== -->
+  <main class="chat-container">
+    
+    <!-- Top Bar -->
+    <header class="chat-header">
+      <div class="chat-title-group">
+        <h2>
+          <span>AI Attack Explanation &amp; Analysis Assistant</span>
+        </h2>
+        <p>Teammate Detection Integration &amp; Structured 8-Section Deep Threat Analysis</p>
+      </div>
+
+      <div class="header-actions">
+        <!-- Simple Language Toggle -->
+        <label class="switch-label" id="simple-mode-wrap">
+          <input type="checkbox" id="simple-toggle" onchange="toggleSimpleMode(this.checked)" style="display:none;">
+          <span id="simple-mode-text">💡 Simple Mode: OFF</span>
+        </label>
+        
+        <button class="header-btn" onclick="copyLatestReport()" id="copy-report-btn">
+          <span>📋</span> Copy Report
+        </button>
+
+        <button class="header-btn" onclick="startNewInvestigation()">
+          <span>🔄</span> Reset View
+        </button>
+      </div>
+    </header>
+
+    <!-- Message Stream -->
+    <div class="messages-stream" id="messages-container">
+      <!-- Chat bubbles rendered here by JS -->
+    </div>
+
+    <!-- Bottom Input & Suggestions Area -->
+    <footer class="chat-bottom">
+      <!-- Quick Threat Alert Ingestion Chips -->
+      <div class="quick-prompts-bar">
+        <button class="quick-prompt-btn quick-prompt-alert" onclick="ingestPresetAlert('Ransomware', 'Critical', 94.0, 'Network Detection Module', '10.0.4.22 (Payroll-DB)')">
+          🔒 Ingest Ransomware Alert (94%)
+        </button>
+        <button class="quick-prompt-btn quick-prompt-alert" onclick="ingestPresetAlert('SQL Injection', 'Critical', 88.0, 'Host WAF Sensor', '192.168.1.150:8443 (API Gateway)')">
+          💉 Ingest SQLi Alert (88%)
+        </button>
+        <button class="quick-prompt-btn quick-prompt-alert" onclick="ingestPresetAlert('Phishing', 'High', 91.0, 'Mailflow Defense Sensor', 'executive.mailbox@org.com')">
+          🎣 Ingest Phishing Alert (91%)
+        </button>
+        <button class="quick-prompt-btn quick-prompt-alert" onclick="ingestPresetAlert('DDoS', 'High', 96.0, 'Edge BGP Telemetry', 'Public Anycast VIP')">
+          ⚡ Ingest DDoS Alert (96%)
+        </button>
+        <button class="quick-prompt-btn" onclick="askAbout('Explain Zero-day exploits and SolarWinds supply chain breach')">
+          ☣️ Zero-day Exploit
+        </button>
+      </div>
+
+      <!-- Text Input Box -->
+      <div class="input-box-wrapper">
+        <span class="input-prompt-icon">❯</span>
+        <input 
+          type="text" 
+          id="user-input" 
+          class="chat-input" 
+          placeholder="Enter attack type (e.g. Ransomware, Phishing, SQL Injection) or paste teammate detection alert JSON..." 
+          onkeydown="handleKeyDown(event)"
+          autocomplete="off"
+        />
+        <button id="send-button" class="btn-send" onclick="submitMessage()">
+          <span>Analyze</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- CLIENT JAVASCRIPT: HISTORY & INTERACTIVE LOGIC           -->
+  <!-- ======================================================== -->
+  <script>
+    const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+      ? ''
+      : 'http://127.0.0.1:8000';
+
+    const STORAGE_KEY = 'cyberquant_investigations_v2';
+    let simpleLanguage = false;
+    let isWaiting = false;
+
+    // Active Investigation Object
+    let activeSessionId = 'inv-' + Date.now();
+    let investigations = [];
+
+    const WELCOME_MESSAGE = {
+      role: 'assistant',
+      content: `### AI Attack Explanation & Analysis Assistant
+I am your dedicated AI explanation and threat analysis specialist, designed for direct integration with your team's attack detection module.
+
+Whenever an attack type or detection result is provided, I deliver a verified, **8-section technical and operational report**:
+1. **TYPE OF ATTACK** (Definition, execution mechanics & characteristics)
+2. **VULNERABILITY EXPLOITED** (CWE/CVE identifiers & causality verification)
+3. **HISTORICAL INCIDENTS** (Verified real-world examples with losses & reliable citations)
+4. **RISK FACTOR** (Objective classification: sensor detection confidence ≠ organizational risk)
+5. **DETECTION MEASURES** (IOCs, behavioral signatures, log telemetry & security tools)
+6. **POSSIBLE IMPACT** (Potential damage vs. confirmed operational consequences)
+7. **PREVENTION AND MITIGATION** (A. Preventive Hardening, B. Immediate Containment)
+8. **IMMEDIATE ACTION SUMMARY** (Prioritized 3–5 step emergency response checklist)
+
+Select any past case in the **Investigation History** on the left, click a quick ingestion chip below, or paste a detection alert JSON payload to begin.`,
+      followups: [
+        "Explain Ransomware attack mechanics and containment.",
+        "Analyze Phishing and Business Email Compromise.",
+        "Explain Distributed Denial of Service (DDoS).",
+        "Analyze SQL Injection vulnerabilities and mitigations."
+      ]
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadHistory();
+      renderHistory();
+      renderMessages();
+      checkBackendHealth();
+    });
+
+    // ========================================================
+    // INVESTIGATION HISTORY MANAGEMENT
+    // ========================================================
+    function loadHistory() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          investigations = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error("Failed to read localStorage history:", e);
+      }
+
+      // Initialize with default investigations if none exist
+      if (!investigations || investigations.length === 0) {
+        investigations = [
+          {
+            id: 'inv-preset-1',
+            title: 'Ransomware Attack Triage',
+            attackType: 'Ransomware',
+            riskLevel: 'Critical',
+            icon: '🔒',
+            timestamp: 'Recent',
+            messages: [
+              { role: 'user', content: 'Explain Ransomware' },
+              {
+                role: 'assistant',
+                content: `## 1. TYPE OF ATTACK\n- **Identification:** Ransomware (Cryptoviral Extortion).\n- **Simple Language Meaning:** A digital hostage attack where cybercriminals lock an organization's systems and data.\n- **How It Works:** Initial access via compromised VPN or RDP, privilege escalation, data exfiltration, and high-speed AES-256 encryption.\n\n## 2. VULNERABILITY EXPLOITED\n- Weaknesses: Lack of MFA on remote portals (CWE-287), unpatched edge flaws (CVE-2023-3519).\n- Causality Status: Possible Root Cause pending forensic analysis.\n\n## 3. HISTORICAL INCIDENTS\n- **Colonial Pipeline (2021, USA):** $4.4M ransom paid, fuel supply shutdown across US East Coast (FBI/CISA).\n\n## 4. RISK FACTOR\n- Risk Classification: **CRITICAL**\n- Note: Detection confidence reflects signature accuracy; risk reflects operational impact.\n\n## 5. DETECTION MEASURES\n- IOCs: \`vssadmin delete shadows\`, mass file renames (.locked), Event ID 4688.\n\n## 6. POSSIBLE IMPACT\n- Potential exposure across enterprise ERP and payroll.\n\n## 7. PREVENTION AND MITIGATION\n### A. Prevention:\n- Immutable 3-2-1 backups, FIDO2 MFA.\n### B. Immediate Response:\n- Sever physical Ethernet immediately.\n\n## 8. IMMEDIATE ACTION SUMMARY\n1. Disconnect affected host from network.\n2. Revoke compromised credentials.\n3. Verify offline backups.`,
+                followups: ["What are Ransomware IOCs?", "Show Colonial Pipeline details."]
+              }
+            ]
+          },
+          {
+            id: 'inv-preset-2',
+            title: 'SQL Injection Analysis',
+            attackType: 'SQL Injection',
+            riskLevel: 'Critical',
+            icon: '💉',
+            timestamp: 'Earlier',
+            messages: [
+              { role: 'user', content: 'Explain SQL Injection' },
+              {
+                role: 'assistant',
+                content: `## 1. TYPE OF ATTACK\n- **Identification:** SQL Injection (SQLi) - CWE-89 / OWASP A03.\n- **Simple Meaning:** Malicious database queries executed through unsanitized user input fields.\n\n## 2. VULNERABILITY EXPLOITED\n- Vulnerability: Dynamic SQL string concatenation instead of prepared statements.\n\n## 3. HISTORICAL INCIDENTS\n- **Sony Pictures (2011, USA):** 1M accounts leaked via basic SQL injection.\n\n## 4. RISK FACTOR\n- Classification: **CRITICAL** (Direct loss of core database confidentiality).\n\n## 5. DETECTION MEASURES\n- IOCs: Single quote anomalies, \`UNION ALL SELECT\`, WAF block telemetry.\n\n## 6. POSSIBLE IMPACT\n- Bulk table extraction, statutory penalties under GDPR.\n\n## 7. PREVENTION AND MITIGATION\n### A. Prevention:\n- Mandatory parameterized queries and prepared statements.\n### B. Immediate Response:\n- Apply WAF virtual patch and rotate database service account credentials.\n\n## 8. IMMEDIATE ACTION SUMMARY\n1. Enable strict WAF blocking rule.\n2. Inspect database query audit logs.\n3. Rotate connection string passwords.`,
+                followups: ["How to write parameterized queries?", "Explain WAF virtual patching."]
+              }
+            ]
+          }
+        ];
+        saveHistory();
+      }
+
+      // Set active session to first or current
+      activeSessionId = investigations[0].id;
+    }
+
+    function saveHistory() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(investigations));
+      } catch (e) {
+        console.error("Failed to save history:", e);
+      }
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('history-container');
+      const countLabel = document.getElementById('history-count-label');
+      container.innerHTML = '';
+      countLabel.innerText = `Investigation History (${investigations.length})`;
+
+      investigations.forEach(inv => {
+        const card = document.createElement('div');
+        card.className = `history-card ${inv.id === activeSessionId ? 'active' : ''}`;
+        card.onclick = () => switchSession(inv.id);
+
+        const badgeClass = inv.riskLevel === 'Critical' ? 'badge-crit' :
+                           inv.riskLevel === 'High' ? 'badge-high' :
+                           inv.riskLevel === 'Medium' ? 'badge-med' : 'badge-info';
+
+        card.innerHTML = `
+          <div class="history-top-row">
+            <div class="history-title-wrap">
+              <span class="history-icon">${inv.icon || '🛡️'}</span>
+              <span class="history-title" title="${inv.title}">${inv.title}</span>
+            </div>
+            <span class="history-badge ${badgeClass}">${(inv.riskLevel || 'ANALYSIS').substring(0, 4).toUpperCase()}</span>
+          </div>
+          <div class="history-bottom-row">
+            <span class="history-time">${inv.timestamp || 'Today'} • ${inv.messages ? inv.messages.length : 1} items</span>
+            <button class="btn-delete-session" onclick="deleteSession('${inv.id}', event)" title="Delete session">✕</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function switchSession(id) {
+      activeSessionId = id;
+      renderHistory();
+      renderMessages();
+    }
+
+    function startNewInvestigation() {
+      const newId = 'inv-' + Date.now();
+      const newSession = {
+        id: newId,
+        title: 'New Investigation',
+        attackType: 'General',
+        riskLevel: 'Analysis',
+        icon: '🛡️',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        messages: [WELCOME_MESSAGE]
+      };
+
+      investigations.unshift(newSession);
+      activeSessionId = newId;
+      saveHistory();
+      renderHistory();
+      renderMessages();
+      document.getElementById('user-input').focus();
+    }
+
+    function deleteSession(id, event) {
+      if (event) event.stopPropagation();
+      investigations = investigations.filter(inv => inv.id !== id);
+      if (investigations.length === 0) {
+        startNewInvestigation();
+        return;
+      }
+      if (activeSessionId === id) {
+        activeSessionId = investigations[0].id;
+      }
+      saveHistory();
+      renderHistory();
+      renderMessages();
+    }
+
+    function clearAllHistory() {
+      if (confirm("Are you sure you want to clear all investigation history?")) {
+        investigations = [];
+        startNewInvestigation();
+      }
+    }
+
+    function getActiveSession() {
+      let session = investigations.find(inv => inv.id === activeSessionId);
+      if (!session) {
+        startNewInvestigation();
+        session = investigations.find(inv => inv.id === activeSessionId);
+      }
+      return session;
+    }
+
+    function updateActiveSessionTitle(attackName, riskLevel, icon) {
+      const session = getActiveSession();
+      if (session) {
+        session.title = attackName.length > 25 ? attackName.substring(0, 22) + '...' : attackName;
+        session.attackType = attackName;
+        if (riskLevel) session.riskLevel = riskLevel;
+        if (icon) session.icon = icon;
+        session.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        saveHistory();
+        renderHistory();
+      }
+    }
+
+    // ========================================================
+    // BACKEND HEALTH & CONTROLS
+    // ========================================================
+    function checkBackendHealth() {
+      fetch(`${API_BASE}/health`)
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('engine-status').innerText = data.gemini_configured
+            ? 'Gemini 2.5 Active'
+            : 'Domain Models Active';
+        })
+        .catch(() => {
+          document.getElementById('engine-status').innerText = 'Offline';
+        });
+    }
+
+    function toggleSimpleMode(enabled) {
+      simpleLanguage = enabled;
+      const wrap = document.getElementById('simple-mode-wrap');
+      const text = document.getElementById('simple-mode-text');
+      if (enabled) {
+        wrap.classList.add('active');
+        text.innerText = '💡 Simple Mode: ON';
+      } else {
+        wrap.classList.remove('active');
+        text.innerText = '💡 Simple Mode: OFF';
+      }
+    }
+
+    function copyLatestReport() {
+      const session = getActiveSession();
+      const lastAssistantMsg = [...session.messages].reverse().find(m => m.role === 'assistant');
+      if (lastAssistantMsg && lastAssistantMsg.content) {
+        navigator.clipboard.writeText(lastAssistantMsg.content).then(() => {
+          const btn = document.getElementById('copy-report-btn');
+          const original = btn.innerHTML;
+          btn.innerHTML = '<span>✓</span> Copied!';
+          setTimeout(() => { btn.innerHTML = original; }, 2000);
+        });
+      }
+    }
+
+    // ========================================================
+    // MARKDOWN & 8-SECTION CARD FORMATTER
+    // ========================================================
+    function formatMarkdown(text) {
+      if (!text) return '';
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Blockquotes / Detection alerts
+      html = html.replace(/^&gt;\s+(.*$)/gim, '<div class="alert-callout">⚠️ $1</div>');
+
+      // 8 Sections: ## 1. TYPE OF ATTACK, ## 2. VULNERABILITY EXPLOITED, etc.
+      html = html.replace(/^##\s+1\.\s+(.*$)/gim, '<div class="section-banner"><span class="section-badge">01 // THREAT TYPE</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+2\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--amber);"><span class="section-badge" style="background:var(--amber);">02 // VULNERABILITY</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+3\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--purple);"><span class="section-badge" style="background:var(--purple);">03 // HISTORICAL CASES</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+4\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--red);"><span class="section-badge" style="background:var(--red);">04 // RISK ASSESSMENT</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+5\.\s+(.*$)/gim, '<div class="section-banner"><span class="section-badge">05 // DETECTION &amp; IOCS</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+6\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--amber);"><span class="section-badge" style="background:var(--amber);">06 // BUSINESS IMPACT</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+7\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--emerald);"><span class="section-badge" style="background:var(--emerald);">07 // MITIGATION &amp; PLAYBOOK</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+8\.\s+(.*$)/gim, '<div class="section-banner" style="border-left-color:var(--red);"><span class="section-badge" style="background:var(--red);">08 // IMMEDIATE ACTIONS</span><h3 class="section-title">$1</h3></div>');
+      html = html.replace(/^##\s+(.*$)/gim, '<div class="section-banner"><span class="section-badge">REPORT</span><h3 class="section-title">$1</h3></div>');
+
+      // Subsections: ### A. Prevention..., ### B. Immediate Response...
+      html = html.replace(/^###\s+(.*$)/gim, '<h4 class="sub-section-title">◈ $1</h4>');
+      html = html.replace(/^####\s+(.*$)/gim, '<h5 style="color:#e2e8f0; font-size:12px; margin:8px 0 4px 0;">$1</h5>');
+
+      // Bold & Italic
+      html = html.replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>');
+      html = html.replace(/\*(.*?)\*/gim, '<i>$1</i>');
+
+      // Inline `code`
+      html = html.replace(/`([^`]+)`/gim, '<code>$1</code>');
+
+      // Horizontal Divider
+      html = html.replace(/^---$/gim, '<hr class="cyber-divider">');
+
+      // Markdown Tables
+      const tableRegex = /\|(.+)\|\n\|[-:\s|]+\|\n((?:\|.*\|\n?)+)/g;
+      html = html.replace(tableRegex, function(match, headerRow, bodyRows) {
+        const headers = headerRow.split('|').map(h => h.trim()).filter(h => h.length > 0);
+        const headerHtml = '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+        
+        const rows = bodyRows.trim().split('\n');
+        const rowsHtml = rows.map(r => {
+          const cells = r.split('|').map(c => c.trim()).filter((c, i, a) => (i > 0 && i < a.length - 1) || c.length > 0);
+          return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        }).join('');
+        
+        return `<div class="table-container"><table class="cyber-table">${headerHtml}<tbody>${rowsHtml}</tbody></table></div>`;
+      });
+
+      // Lists
+      const lines = html.split('\n');
+      let inUl = false;
+      let inOl = false;
+      const processed = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        
+        if (/^[\-\*]\s+(.*)/.test(line)) {
+          if (!inUl) {
+            if (inOl) { processed.push('</ol>'); inOl = false; }
+            processed.push('<ul class="report-list">');
+            inUl = true;
+          }
+          processed.push(line.replace(/^[\-\*]\s+(.*)/, '<li>$1</li>'));
+          continue;
+        }
+
+        if (/^[0-9]+\.\s+(.*)/.test(line)) {
+          if (!inOl) {
+            if (inUl) { processed.push('</ul>'); inUl = false; }
+            processed.push('<ol class="report-num-list">');
+            inOl = true;
+          }
+          processed.push(line.replace(/^[0-9]+\.\s+(.*)/, '<li>$1</li>'));
+          continue;
+        }
+
+        if (inUl) { processed.push('</ul>'); inUl = false; }
+        if (inOl) { processed.push('</ol>'); inOl = false; }
+
+        processed.push(line);
+      }
+      if (inUl) processed.push('</ul>');
+      if (inOl) processed.push('</ol>');
+
+      return processed.join('\n')
+        .split('\n\n')
+        .map(chunk => {
+          chunk = chunk.trim();
+          if (!chunk) return '';
+          if (chunk.startsWith('<div') || chunk.startsWith('<h') || chunk.startsWith('<ul') || chunk.startsWith('<ol')) {
+            return chunk;
+          }
+          return `<p>${chunk.replace(/\n/g, '<br>')}</p>`;
+        })
+        .join('');
+    }
+
+    // ========================================================
+    // CHAT RENDERING
+    // ========================================================
+    function renderMessages() {
+      const container = document.getElementById('messages-container');
+      container.innerHTML = '';
+      const session = getActiveSession();
+
+      session.messages.forEach(msg => {
+        const row = document.createElement('div');
+        row.className = `message-row ${msg.role === 'user' ? 'user-row' : 'assistant-row'}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = `avatar ${msg.role === 'user' ? 'avatar-user' : 'avatar-ai'}`;
+        avatar.innerText = msg.role === 'user' ? '👤' : '🛡️';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bubble-wrapper';
+
+        // Ingested Telemetry HUD Card
+        if (msg.telemetry) {
+          const teleCard = document.createElement('div');
+          teleCard.className = 'telemetry-card';
+          teleCard.innerHTML = `
+            <div class="telemetry-top-bar">
+              <span class="telemetry-id">ID: ${msg.telemetry.detection_id || 'DET-LIVE'}</span>
+              <span class="telemetry-source">Module: ${msg.telemetry.detection_source || 'Sensor'}</span>
+            </div>
+            <div class="telemetry-grid">
+              <div class="telemetry-item">
+                <div class="telemetry-label">Threat Vector</div>
+                <div class="telemetry-val" style="color:#f87171;">${msg.telemetry.received_attack_type}</div>
+              </div>
+              <div class="telemetry-item">
+                <div class="telemetry-label">Sensor Confidence</div>
+                <div class="telemetry-val" style="color:var(--cyan);">${msg.telemetry.sensor_confidence}%</div>
+              </div>
+              <div class="telemetry-item">
+                <div class="telemetry-label">Sensor Severity</div>
+                <div class="telemetry-val" style="color:var(--amber);">${msg.telemetry.sensor_severity}</div>
+              </div>
+              <div class="telemetry-item">
+                <div class="telemetry-label">Risk Exposure</div>
+                <div class="telemetry-val" style="color:var(--red);">${msg.telemetry.risk_level} (${msg.telemetry.organizational_risk_score}/100)</div>
+              </div>
+            </div>
+          `;
+          wrapper.appendChild(teleCard);
+        }
+
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${msg.role === 'user' ? 'bubble-user' : 'bubble-assistant'}`;
+        
+        if (msg.role === 'user') {
+          bubble.innerText = msg.content;
+        } else {
+          bubble.innerHTML = formatMarkdown(msg.content);
+        }
+        wrapper.appendChild(bubble);
+
+        // Grounding Citations
+        if (msg.sources && msg.sources.length > 0) {
+          const citRow = document.createElement('div');
+          citRow.className = 'citations-row';
+          const label = document.createElement('span');
+          label.style.cssText = 'font-size:10px; color:var(--text-dim); text-transform:uppercase; font-weight:700; align-self:center;';
+          label.innerText = 'Verified References:';
+          citRow.appendChild(label);
+
+          msg.sources.forEach(s => {
+            const tag = document.createElement('span');
+            tag.className = 'citation-tag';
+            tag.innerText = `✓ ${s.title}`;
+            citRow.appendChild(tag);
+          });
+          wrapper.appendChild(citRow);
+        }
+
+        // Suggested Follow-up Pills
+        if (msg.followups && msg.followups.length > 0) {
+          const followGroup = document.createElement('div');
+          followGroup.className = 'followups-group';
+          msg.followups.forEach(f => {
+            const btn = document.createElement('button');
+            btn.className = 'followup-chip';
+            btn.innerText = `↳ ${f}`;
+            btn.onclick = () => askAbout(f);
+            followGroup.appendChild(btn);
+          });
+          wrapper.appendChild(followGroup);
+        }
+
+        row.appendChild(avatar);
+        row.appendChild(wrapper);
+        container.appendChild(row);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitMessage();
+      }
+    }
+
+    function askAbout(text) {
+      document.getElementById('user-input').value = text;
+      submitMessage();
+    }
+
+    function ingestPresetAlert(attackType, severity, confidence, source, targetAsset) {
+      const payload = {
+        attack_type: attackType,
+        severity: severity,
+        confidence: confidence,
+        source: source,
+        target_asset: targetAsset
+      };
+      document.getElementById('user-input').value = JSON.stringify(payload, null, 2);
+      submitMessage();
+    }
+
+    // ========================================================
+    // MESSAGE SUBMISSION & API DISPATCH
+    // ========================================================
+    async function submitMessage() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text || isWaiting) return;
+
+      input.value = '';
+      const session = getActiveSession();
+      session.messages.push({ role: 'user', content: text });
+      renderMessages();
+
+      // Typing indicator
+      isWaiting = true;
+      document.getElementById('send-button').disabled = true;
+
+      const container = document.getElementById('messages-container');
+      const typingRow = document.createElement('div');
+      typingRow.className = 'message-row assistant-row';
+      typingRow.id = 'typing-indicator-row';
+      typingRow.innerHTML = `
+        <div class="avatar avatar-ai">🛡️</div>
+        <div class="bubble bubble-assistant" style="display:inline-block;">
+          <div class="typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      `;
+      container.appendChild(typingRow);
+      container.scrollTop = container.scrollHeight;
+
+      try {
+        // Detect if text is JSON detection payload
+        let isJsonAlert = false;
+        let alertData = null;
+        if (text.startsWith('{') && text.endsWith('}')) {
+          try {
+            alertData = JSON.parse(text);
+            if (alertData.attack_type || alertData.attack) {
+              isJsonAlert = true;
+            }
+          } catch(e) {}
+        }
+
+        if (isJsonAlert) {
+          const res = await fetch(`${API_BASE}/ai/detection-result`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              attack_type: alertData.attack_type || alertData.attack,
+              severity: alertData.severity || "High",
+              confidence: alertData.confidence || 90.0,
+              source: alertData.source || "Teammate Detection Module",
+              target_asset: alertData.target_asset || null,
+              raw_payload_snippet: alertData.raw_payload_snippet || null
+            })
+          });
+
+          const data = await res.json();
+          const typingEl = document.getElementById('typing-indicator-row');
+          if (typingEl) typingEl.remove();
+
+          const atkName = data.received_attack_type;
+          updateActiveSessionTitle(atkName + " Ingestion", data.risk_level, '🚨');
+
+          session.messages.push({
+            role: 'assistant',
+            telemetry: data,
+            content: data.structured_analysis || data.briefing,
+            followups: [
+              `What are immediate containment actions for ${atkName}?`,
+              `What verified real-world incidents involved ${atkName}?`,
+              `Explain ${atkName} in simple language for leadership.`
+            ],
+            sources: data.historical_reference ? [{ title: `${data.historical_reference.incident_name} (${data.historical_reference.year})` }] : []
+          });
+        } else {
+          // Standard attack inquiry / chat
+          const res = await fetch(`${API_BASE}/ai/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: text,
+              session_id: session.id,
+              simple_language: simpleLanguage,
+              history: session.messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+            })
+          });
+
+          const data = await res.json();
+          const typingEl = document.getElementById('typing-indicator-row');
+          if (typingEl) typingEl.remove();
+
+          // Infer attack name for history title
+          const knownAttacks = [
+            { name: "Ransomware", icon: "🔒", risk: "Critical" },
+            { name: "SQL Injection", icon: "💉", risk: "Critical" },
+            { name: "Phishing", icon: "🎣", risk: "High" },
+            { name: "DDoS", icon: "⚡", risk: "High" },
+            { name: "Zero-day", icon: "☣️", risk: "Critical" },
+            { name: "Malware", icon: "🦠", risk: "High" }
+          ];
+          const matched = knownAttacks.find(a => text.toLowerCase().includes(a.name.toLowerCase()));
+          if (matched) {
+            updateActiveSessionTitle(`${matched.name} Analysis`, matched.risk, matched.icon);
+          } else if (session.title === 'New Investigation') {
+            updateActiveSessionTitle(text, 'Analysis', '🛡️');
+          }
+
+          session.messages.push({
+            role: 'assistant',
+            content: data.reply,
+            followups: data.suggested_followups || [],
+            sources: data.sources || []
+          });
+        }
+
+        saveHistory();
+      } catch (err) {
+        const typingEl = document.getElementById('typing-indicator-row');
+        if (typingEl) typingEl.remove();
+
+        session.messages.push({
+          role: 'assistant',
+          content: "⚠️ **Connection Error**: Unable to connect to the FastAPI backend. Please ensure the server is active on `http://127.0.0.1:8000`.",
+          followups: []
+        });
+      } finally {
+        isWaiting = false;
+        document.getElementById('send-button').disabled = false;
+        renderMessages();
+      }
+    }
+  </script>
+</body>
+</html>

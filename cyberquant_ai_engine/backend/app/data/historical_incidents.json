@@ -1,0 +1,248 @@
+[
+  {
+    "id": "inc-001",
+    "incident_name": "Colonial Pipeline Ransomware Shutdown",
+    "organization": "Colonial Pipeline Company",
+    "country": "United States",
+    "year": 2021,
+    "attack_type": "Ransomware",
+    "attack_method": "Compromised single legacy VPN account credentials (without MFA); DarkSide ransomware deployment encrypting billing and business systems.",
+    "consequences": "Precautionary 5-day shutdown of 5,500 miles of fuel pipeline supplying 45% of East Coast fuel; airline flight disruptions; regional fuel panic and gas station shortages; emergency declaration by US DOT.",
+    "financial_losses": "$4.4 million ransom paid (75 Bitcoin, ~$2.3M later recovered by FBI) + estimated tens of millions in operational downtime and forensic investigation.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: CEO Joseph Blount testified to US Senate confirming $4.4M ransom payment.",
+    "sources": [
+      "US Senate Homeland Security & Governmental Affairs Committee Hearing (June 2021)",
+      "US Department of Justice Press Release (June 7, 2021)",
+      "CISA Alert AA21-131A"
+    ]
+  },
+  {
+    "id": "inc-002",
+    "incident_name": "National Health Service (NHS) WannaCry Outbreak",
+    "organization": "National Health Service (NHS England & Scotland)",
+    "country": "United Kingdom",
+    "year": 2017,
+    "attack_type": "Ransomware",
+    "attack_method": "WannaCry worm exploiting EternalBlue (SMBv1 vulnerability MS17-010) spreading autonomously across unpatched Windows systems.",
+    "consequences": "Disrupted 80 out of 236 NHS England hospital trusts; cancelled an estimated 19,000 medical appointments and surgeries; ambulances diverted from emergency rooms; staff reverted to paper records.",
+    "financial_losses": "Estimated £92 million total cost (£19M in direct IT remediation and lost output during disruption + £73M in subsequent IT modernization and cybersecurity upgrades).",
+    "is_verified_financial": true,
+    "financial_status": "Verified: Official UK Department of Health and Social Care evaluation report (2018).",
+    "sources": [
+      "UK National Audit Office (NAO) Report: Investigation WannaCry cyber attack and the NHS (Oct 2017)",
+      "UK Department of Health and Social Care Securing Cyber Resilience in Health and Care Report (2018)"
+    ]
+  },
+  {
+    "id": "inc-003",
+    "incident_name": "Maersk / NotPetya Global Logistics Sabotage",
+    "organization": "A.P. Moller - Maersk",
+    "country": "Denmark / Global",
+    "year": 2017,
+    "attack_type": "Ransomware",
+    "attack_method": "Supply chain compromise of Ukrainian accounting software M.E.Doc; weaponized wiper disguised as ransomware spreading via EternalBlue and PsExec.",
+    "consequences": "Complete shutdown of Maersk's global booking system across 76 port terminals; 45,000 PCs, 4,000 servers, and 2,500 applications reinstalled from scratch; container ships stranded at sea.",
+    "financial_losses": "Approximately $250 million to $300 million in direct lost revenue, demurrage fees, and disaster recovery costs.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: Formally reported in Maersk Q3 2017 and Annual Financial Statements.",
+    "sources": [
+      "A.P. Møller - Mærsk A/S Annual Report 2017",
+      "Wired: The Untold Story of NotPetya, the Most Devastating Cyberattack in History (2018)",
+      "White House Statement on NotPetya Attribution (Feb 2018)"
+    ]
+  },
+  {
+    "id": "inc-004",
+    "incident_name": "Dyn DNS Mirai Botnet DDoS Attack",
+    "organization": "Dyn (Oracle Dyn Managed DNS)",
+    "country": "United States / Global",
+    "year": 2016,
+    "attack_type": "DDoS",
+    "attack_method": "Distributed Denial of Service orchestrated by Mirai botnet compromising ~100,000 IoT devices (DVRs, IP cameras) using factory-default telnet credentials, generating 1.2 Tbps of SYN and DNS traffic.",
+    "consequences": "Widespread outages across North America and Europe for major platforms including GitHub, Twitter, Spotify, Netflix, Reddit, Amazon, PayPal, and PlayStation Network for over 10 hours.",
+    "financial_losses": "Dyn estimated loss was undisclosed; overall economic loss across affected online businesses estimated at $110 million (IHS Markit estimate).",
+    "is_verified_financial": false,
+    "financial_status": "Estimated: Direct ransom was not sought; loss derived from industry downtime analytics.",
+    "sources": [
+      "Dyn Official Analysis of the 21 October 2016 DDoS Attack",
+      "US Department of Justice Indictment: United States v. Jha et al. (Mirai Authors)",
+      "IHS Markit Cyber Risk Analytics Report (2016)"
+    ]
+  },
+  {
+    "id": "inc-005",
+    "incident_name": "GitHub 1.35 Tbps Memcached DDoS",
+    "organization": "GitHub Inc.",
+    "country": "United States",
+    "year": 2018,
+    "attack_type": "DDoS",
+    "attack_method": "Memcached UDP reflection amplification attack reaching 1.35 Tbps and 126.9 million packets per second without using a compromised botnet.",
+    "consequences": "GitHub was intermittently unavailable for 8 minutes; automated Akamai Prolexic routed and absorbed the volumetric spike, restoring service in under 10 minutes.",
+    "financial_losses": "$0 ransom paid; minimal financial impact due to pre-provisioned Tier-1 DDoS mitigation scrubbing centers.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: Confirmed by GitHub Engineering Incident Post-Mortem.",
+    "sources": [
+      "GitHub Engineering: Incident Report: 1.35 Tbps Memcached Amplification DDoS (March 2018)",
+      "Akamai Technologies Threat Research: Memcached Reflection DDoS Analysis"
+    ]
+  },
+  {
+    "id": "inc-006",
+    "incident_name": "Equifax Massive Credit Data Breach",
+    "organization": "Equifax Inc.",
+    "country": "United States",
+    "year": 2017,
+    "attack_type": "Zero-day attacks",
+    "attack_method": "Exploitation of unpatched Apache Struts CVE-2017-5638 vulnerability in dispute resolution web portal; attacker traversed internal databases for 76 days undetected.",
+    "consequences": "Exfiltration of sensitive personal credit records of 147 million consumers, including names, Social Security numbers, birth dates, home addresses, and 209,000 credit card numbers.",
+    "financial_losses": "Over $1.38 billion total costs, including $425 million FTC consumer redress fund settlement, $100 million CFPB civil penalties, and hundreds of millions in forensic legal upgrades.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: Federal Trade Commission (FTC) & Consumer Financial Protection Bureau Settlement Order (2019).",
+    "sources": [
+      "Federal Trade Commission (FTC): Equifax Data Breach Settlement (2019)",
+      "US Government Accountability Office (GAO-18-559): Actions Taken by Equifax and Federal Agencies",
+      "US House Committee on Oversight and Government Reform: The Equifax Data Breach Majority Staff Report"
+    ]
+  },
+  {
+    "id": "inc-007",
+    "incident_name": "SolarWinds SUNBURST Supply Chain Intrusion",
+    "organization": "SolarWinds & Multiple US Federal Agencies",
+    "country": "United States / Global",
+    "year": 2020,
+    "attack_type": "Zero-day attacks",
+    "attack_method": "State-sponsored (APT29/Cozy Bear) software supply chain injection of backdoor into Orion IT monitoring platform updates (SUNBURST / Solorigate DLL).",
+    "consequences": "Trojanized updates delivered to approximately 18,000 public and private organizations worldwide, leading to high-profile espionage breaches at US Departments of Homeland Security, Treasury, State, and Energy.",
+    "financial_losses": "SolarWinds reported $50+ million in direct cyber response expenses and a $26 million SEC shareholder derivative settlement; wider national enterprise remediation costs exceeded $500 million.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: SolarWinds SEC Form 10-K Filings & CISA Emergency Directive 21-01.",
+    "sources": [
+      "CISA Emergency Directive 21-01: Mitigate SolarWinds Orion Code Compromise",
+      "FireEye / Mandiant Cyber Threat Intelligence: Highly Evasive Attacker Leverages SolarWinds Supply Chain",
+      "SolarWinds Form 10-K SEC Annual Report (2021)"
+    ]
+  },
+  {
+    "id": "inc-008",
+    "incident_name": "FACC AG CEO Fraud Business Email Compromise (BEC)",
+    "organization": "FACC AG (Austrian Aerospace Manufacturer)",
+    "country": "Austria",
+    "year": 2016,
+    "attack_type": "Phishing",
+    "attack_method": "Spear-phishing and executive impersonation (Whaling / BEC) spoofing the CEO's email address to instruct an accounting employee to transfer funds for a fake acquisition.",
+    "consequences": "Employee wired company funds to foreign bank accounts over several transactions; the company's CEO and CFO were subsequently fired by the supervisory board.",
+    "financial_losses": "€54 million ($61 million) stolen; €10.8 million ($12.2 million) seized and recovered via international police cooperation; net loss ~€42.8 million ($48.8 million).",
+    "is_verified_financial": true,
+    "financial_status": "Verified: FACC AG Ad-hoc Public Disclosures & Austrian Stock Market Filings.",
+    "sources": [
+      "FACC AG Corporate Ad-hoc Disclosure (Jan 19, 2016)",
+      "Reuters: Austrian plane parts maker FACC fires CEO after $56 million cyber fraud (May 2016)"
+    ]
+  },
+  {
+    "id": "inc-009",
+    "incident_name": "Heartland Payment Systems SQL Injection Card Theft",
+    "organization": "Heartland Payment Systems",
+    "country": "United States",
+    "year": 2008,
+    "attack_type": "SQL Injection",
+    "attack_method": "SQL Injection on corporate web login page allowed attackers (Albert Gonzalez gang) to gain access and place a packet sniffer directly on the internal card processing network.",
+    "consequences": "Theft of more than 130 million debit and credit card numbers from over 250,000 businesses processing transactions through Heartland; Visa and Mastercard temporarily revoked Heartland's processing certification.",
+    "financial_losses": "Over $140 million paid in settlements to Visa, MasterCard, American Express, and issuing banks, alongside legal and compliance fees.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: US Department of Justice Indictment & Heartland SEC Filings.",
+    "sources": [
+      "US Department of Justice Press Release: Albert Gonzalez Indicted for Heartland Breach (Aug 2009)",
+      "Heartland Payment Systems Form 8-K SEC Filing",
+      "Federal Reserve Bank of Boston Risk Study: Payment Cards and the Heartland Breach"
+    ]
+  },
+  {
+    "id": "inc-010",
+    "incident_name": "TalkTalk Telecom SQL Injection & Extortion",
+    "organization": "TalkTalk Telecom Group",
+    "country": "United Kingdom",
+    "year": 2015,
+    "attack_type": "SQL Injection",
+    "attack_method": "Blind SQL injection targeting an outdated legacy web server acquired during an acquisition (Tiscali UK) using automated vulnerability scanners.",
+    "consequences": "Personal data of 156,959 customers and 15,656 bank account numbers exfiltrated; customer churn of 101,000 subscribers; massive brand erosion.",
+    "financial_losses": "£400,000 fine from UK Information Commissioner's Office (record fine at the time) + £42 million in direct trading impact and £18 million in security upgrades (total £60M+).",
+    "is_verified_financial": true,
+    "financial_status": "Verified: UK Information Commissioner's Office (ICO) Enforcement Notice & TalkTalk Financial Reports.",
+    "sources": [
+      "UK Information Commissioner's Office (ICO) Penalty Notice against TalkTalk Telecom Group PLC (Oct 2016)",
+      "TalkTalk Interim Financial Results 2015/2016"
+    ]
+  },
+  {
+    "id": "inc-011",
+    "incident_name": "British Airways Magecart Digital Skimming (XSS / Supply Chain)",
+    "organization": "British Airways",
+    "country": "United Kingdom",
+    "year": 2018,
+    "attack_type": "Cross-Site Scripting",
+    "attack_method": "Client-side script injection (Magecart digital skimming) through modified baggage claim JavaScript code on the website and mobile app, harvesting checkout payment details in real time.",
+    "consequences": "Exfiltration of personal and payment data of approximately 429,612 customers and staff (including CVV security codes and billing addresses).",
+    "financial_losses": "£20 million ($26 million) ICO GDPR penalty (reduced from initial £183 million proposal due to COVID-19 sector considerations) + multi-million pound confidential class-action lawsuit settlement.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: UK Information Commissioner's Office (ICO) Final Penalty Notice (Oct 2020).",
+    "sources": [
+      "UK Information Commissioner's Office (ICO) Penalty Notice: British Airways PLC (2020)",
+      "RiskIQ Threat Research: Inside the Magecart British Airways Breach"
+    ]
+  },
+  {
+    "id": "inc-012",
+    "incident_name": "DigiNotar SSL Certificate Authority Compromise",
+    "organization": "DigiNotar (Dutch Certificate Authority)",
+    "country": "Netherlands",
+    "year": 2011,
+    "attack_type": "Man-in-the-Middle attacks",
+    "attack_method": "Intrusion into Dutch CA web servers yielding unauthorized issuance of over 500 fraudulent wildcard SSL/TLS certificates (including *.google.com) used for active Iranian government MitM interception.",
+    "consequences": "Interception and eavesdropping of communications of ~300,000 Iranian users attempting to access Google and Gmail; total revocation of trust by Microsoft, Google, Mozilla, and Apple; bankruptcy of DigiNotar.",
+    "financial_losses": "100% loss of business resulting in total company liquidation and bankruptcy declared within two months of discovery.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: Dutch Government Fox-IT Investigation Report & Haarlem Commercial Court Bankruptcy.",
+    "sources": [
+      "Fox-IT Black Tulip Report: Operation Black Tulip - Certificate Authority DigiNotar Compromised (Sept 2011)",
+      "Dutch Ministry of the Interior and Kingdom Relations Official Inquiry"
+    ]
+  },
+  {
+    "id": "inc-013",
+    "incident_name": "23andMe Credential Stuffing & Sensitive DNA Data Leak",
+    "organization": "23andMe",
+    "country": "United States",
+    "year": 2023,
+    "attack_type": "Password attacks",
+    "attack_method": "Automated credential stuffing using username/password pairs leaked in past third-party breaches without MFA enforcement; leveraged the 'DNA Relatives' feature to scrape millions of connected profile trees.",
+    "consequences": "Compromised direct accounts of 14,000 users, leading to the scraping of ancestry and sensitive health genetic metadata of 6.9 million total individuals; data posted on hacking forums with targeted ethnic filtering.",
+    "financial_losses": "$30 million tentative class action settlement fund in 2024 + severe stock decline and restructuring.",
+    "is_verified_financial": true,
+    "financial_status": "Verified: 23andMe SEC Form 8-K and US District Court Northern District of California filings.",
+    "sources": [
+      "23andMe Form 8-K SEC Filing (Dec 2023)",
+      "US District Court Northern District of California Class Action Settlement Proceedings (2024)",
+      "CISA / FBI Joint Cybersecurity Advisory on Credential Stuffing"
+    ]
+  },
+  {
+    "id": "inc-014",
+    "incident_name": "Stuxnet Cyber-Physical Industrial Sabotage",
+    "organization": "Natanz Uranium Enrichment Facility",
+    "country": "Iran",
+    "year": 2010,
+    "attack_type": "Malware",
+    "attack_method": "Sophisticated military-grade worm using 4 zero-day Windows exploits, air-gap bridging via infected USB flash drives, and targeted Siemens Step7 PLC code modification.",
+    "consequences": "Physical destruction of approximately 1,000 IR-1 gas centrifuges by altering rotor speeds while spoofing normal industrial telemetry back to operators; set back Iranian nuclear program by an estimated 1-2 years.",
+    "financial_losses": "Estimated tens to hundreds of millions in specialized nuclear enrichment centrifuges and facility reconstruction (no exact state budget disclosed).",
+    "is_verified_financial": false,
+    "financial_status": "Estimated: Classified military operation; physical destruction confirmed by IAEA inspection reports.",
+    "sources": [
+      "Symantec Security Response: W32.Stuxnet Dossier (Feb 2011)",
+      "International Atomic Energy Agency (IAEA) Safeguards Reports on Iran (2010-2011)",
+      "Kim Zetter: Countdown to Zero Day - Stuxnet and the Launch of the World's First Digital Weapon"
+    ]
+  }
+]
