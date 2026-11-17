@@ -20,7 +20,11 @@ export function calculateFinancialImpact(params: FinancialCalculationParams): Fi
   // Default assumed outage duration based on attack type if not specified
   let durationHrs = params.assumedDurationHours || 2.5;
   if (!params.assumedDurationHours) {
-    if (params.attackCategory === 'abnormal_generator_shutdown') durationHrs = 4.0;
+    if (params.attackCategory === 'ransomware') durationHrs = 6.0;
+    else if (params.attackCategory === 'dos_attack') durationHrs = 2.0;
+    else if (params.attackCategory === 'unauthorized_insider') durationHrs = 4.5;
+    else if (params.attackCategory === 'credential_stuffing') durationHrs = 1.5;
+    else if (params.attackCategory === 'abnormal_generator_shutdown') durationHrs = 4.0;
     else if (params.attackCategory === 'suspicious_substation_switching') durationHrs = 2.0;
     else if (params.attackCategory === 'unauthorized_scada_access') durationHrs = 3.0;
     else durationHrs = 1.5;

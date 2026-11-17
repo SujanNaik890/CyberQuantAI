@@ -8,7 +8,8 @@ import {
   Bot, 
   Grid,
   Zap,
-  Radio
+  Radio,
+  Crosshair
 } from 'lucide-react';
 
 export const CyberNavBar: React.FC = () => {
@@ -17,7 +18,6 @@ export const CyberNavBar: React.FC = () => {
   const alerts = useCyberStore((s) => s.alerts);
   const unackAlerts = alerts.filter((a) => !a.isAcknowledged).length;
   const isConnected = useCyberStore((s) => s.isConnected);
-  const triggerTestAttack = useCyberStore((s) => s.triggerTestAttack);
 
   return (
     <div className="bg-[#070e1b] border-b border-[#1e293b] px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
@@ -33,6 +33,18 @@ export const CyberNavBar: React.FC = () => {
         >
           <Grid className="w-3.5 h-3.5" />
           <span>CYBER QUANT GRID</span>
+        </button>
+
+        <button
+          onClick={() => setNavTab('attacks')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
+            activeNavTab === 'attacks'
+              ? 'bg-red-500/20 text-red-300 border border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.35)]'
+              : 'text-slate-400 hover:text-red-300'
+          }`}
+        >
+          <Crosshair className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+          <span className="font-bold">ATTACK ENGINE</span>
         </button>
 
         <button

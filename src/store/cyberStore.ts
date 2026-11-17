@@ -15,14 +15,14 @@ export interface CyberStore {
   assetRiskMap: Record<string, AssetRiskStatus>;
   notifications: CyberNotification[];
   financialSummary: FinancialSummary;
-  activeNavTab: 'grid' | 'detection' | 'alerts' | 'financial' | 'analytics' | 'ai';
+  activeNavTab: 'grid' | 'attacks' | 'detection' | 'alerts' | 'financial' | 'analytics' | 'ai';
   selectedIncident: FinancialIncident | null;
   selectedAlert: RiskAlert | null;
   isMuted: boolean;
   isConnected: boolean;
 
   // Actions
-  setNavTab: (tab: 'grid' | 'detection' | 'alerts' | 'financial' | 'analytics' | 'ai') => void;
+  setNavTab: (tab: 'grid' | 'attacks' | 'detection' | 'alerts' | 'financial' | 'analytics' | 'ai') => void;
   selectIncident: (incident: FinancialIncident | null) => void;
   selectAlert: (alert: RiskAlert | null) => void;
   toggleMute: () => void;
@@ -37,6 +37,13 @@ export interface CyberStore {
   clearAllNotifications: () => void;
   fetchInitialData: () => Promise<void>;
   triggerTestAttack: (scenario: string) => Promise<void>;
+  launchCustomAttack: (params: {
+    attackType: string;
+    targetAssetId: string;
+    sourceIP?: string;
+    description?: string;
+    intensity?: 'low' | 'medium' | 'high' | 'critical';
+  }) => Promise<any>;
 }
 
 export const useCyberStore = create<CyberStore>((set, get) => ({
@@ -287,6 +294,47 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to trigger attack event:', err);
+    }
+  },
+
+  launchCustomAttack: async ({ attackType, targetAssetId, sourceIP, description, intensity = 'high' }) => {
+    const host = window.location.hostname || 'localhost';
+    const confidenceMap: Record<string, number> = {
+      low: 0.65,
+      medium: 0.78,
+      high: 0.91,
+      critical: 0.98,
+    };
+    const confidenceLevel = confidenceMap[intensity] || 0.88;
+
+    const ipMap: Record<string, string> = {
+      ransomware: '198.51.100.77',
+      dos_attack: '185.220.101.44',
+      unauthorized_insider: '10.240.12.89',
+      credential_stuffing: '194.26.29.215',
+    };
+
+    const finalIP = sourceIP || ipMap[attackType] || '192.168.1.105';
+
+    try {
+      const res = await fetch(`http://${host}:3001/api/events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attackCategory: attackType,
+          targetAssetId,
+          sourceIP: finalIP,
+          description: description || `Targeted cyber vector: ${attackType.replace(/_/g, ' ').toUpperCase()} initiated against ${targetAssetId}.`,
+          detectionSource: 'simulated_attack',
+          attackStatus: 'confirmed',
+          confidenceLevel,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Failed to launch attack:', err);
+      throw err;
     }
   },
 }));

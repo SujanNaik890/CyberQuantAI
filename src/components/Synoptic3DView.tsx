@@ -145,6 +145,8 @@ const HydroModel: React.FC<{
   const waterRef = useRef<THREE.Mesh>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[gen.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[gen.id]?.riskScore);
 
   useFrame(() => {
     if (waterRef.current && isOnline) {
@@ -175,7 +177,12 @@ const HydroModel: React.FC<{
       {/* High-relief Concrete Gravity Dam */}
       <mesh position={[0, 5.0, 0]} rotation={[0, Math.PI / 4, 0]}>
         <boxGeometry args={[16, 10, 5.5]} />
-        <meshStandardMaterial color={isSelected ? '#38bdf8' : '#475569'} roughness={0.7} />
+        <meshStandardMaterial 
+          color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : riskStatus === 'suspicious' ? '#f59e0b' : '#475569'} 
+          roughness={0.7} 
+          emissive={riskStatus === 'compromised' ? '#e11d48' : '#000000'}
+          emissiveIntensity={riskStatus === 'compromised' ? 0.7 : 0}
+        />
       </mesh>
 
       {/* 4 Heavy High-Pressure Steel Penstocks */}
@@ -201,16 +208,27 @@ const HydroModel: React.FC<{
       {/* Base platform */}
       <mesh position={[0, 0.2, 0]}>
         <cylinderGeometry args={[12, 12.5, 0.4, 32]} />
-        <meshBasicMaterial color={isSelected ? '#38bdf8' : '#06b6d4'} wireframe />
+        <meshBasicMaterial color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : '#06b6d4'} wireframe />
       </mesh>
 
       <Html position={[0, 12, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-cyan-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(6,182,212,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-cyan-400'
+        }`}>
           <div className="text-xs text-cyan-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
-            <Waves className="w-3.5 h-3.5 text-cyan-400" /> {gen.name}
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Waves className="w-3.5 h-3.5 text-cyan-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{gen.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {isOnline ? `${Math.round(gen.curMW)} MW • Sharavathi Reservoir` : 'OFFLINE'}
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : isOnline ? `${Math.round(gen.curMW)} MW • Sharavathi Reservoir` : 'OFFLINE'}
           </div>
         </div>
       </Html>
@@ -228,6 +246,8 @@ const SolarModel: React.FC<{
   const panelRef = useRef<THREE.Group>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[gen.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[gen.id]?.riskScore);
 
   useFrame(() => {
     if (panelRef.current && isOnline) {
@@ -267,11 +287,11 @@ const SolarModel: React.FC<{
               <mesh rotation={[Math.PI / 2, 0, 0]}>
                 <boxGeometry args={[3.2, 2.2, 0.1]} />
                 <meshStandardMaterial 
-                  color={isSelected ? '#38bdf8' : isOnline ? '#1d4ed8' : '#334155'} 
+                  color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : isOnline ? '#1d4ed8' : '#334155'} 
                   roughness={0.1} 
                   metalness={0.95} 
-                  emissive={isOnline ? '#1e3a8a' : '#000000'}
-                  emissiveIntensity={0.5}
+                  emissive={riskStatus === 'compromised' ? '#e11d48' : isOnline ? '#1e3a8a' : '#000000'}
+                  emissiveIntensity={riskStatus === 'compromised' ? 0.8 : 0.5}
                 />
               </mesh>
             </group>
@@ -287,16 +307,27 @@ const SolarModel: React.FC<{
 
       <mesh position={[0, 0.2, 0]}>
         <cylinderGeometry args={[12, 12.5, 0.4, 32]} />
-        <meshBasicMaterial color={isSelected ? '#38bdf8' : '#f59e0b'} wireframe />
+        <meshBasicMaterial color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : '#f59e0b'} wireframe />
       </mesh>
 
       <Html position={[0, 11, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-amber-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(245,158,11,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-amber-400'
+        }`}>
           <div className="text-xs text-amber-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
-            <Sun className="w-3.5 h-3.5 text-amber-400" /> {gen.name}
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{gen.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {isOnline ? `${Math.round(gen.curMW)} MW • Shakti Sthala 2GW` : 'OFFLINE'}
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : isOnline ? `${Math.round(gen.curMW)} MW • Shakti Sthala 2GW` : 'OFFLINE'}
           </div>
         </div>
       </Html>
@@ -316,6 +347,8 @@ const WindModel: React.FC<{
   const rotorRef3 = useRef<THREE.Group>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[gen.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[gen.id]?.riskScore);
 
   useFrame((_, delta) => {
     const rpm = gen.simMetrics.secondaryParamValue;
@@ -329,7 +362,13 @@ const WindModel: React.FC<{
     <group position={pos}>
       <mesh position={[0, 6.0, 0]}>
         <cylinderGeometry args={[0.35, 0.8, 12, 16]} />
-        <meshStandardMaterial color="#f1f5f9" metalness={0.7} roughness={0.3} />
+        <meshStandardMaterial 
+          color={riskStatus === 'compromised' ? '#f43f5e' : '#f1f5f9'} 
+          metalness={0.7} 
+          roughness={0.3} 
+          emissive={riskStatus === 'compromised' ? '#e11d48' : '#000000'}
+          emissiveIntensity={riskStatus === 'compromised' ? 0.7 : 0}
+        />
       </mesh>
       <mesh position={[0, 12.0, 0.8]} rotation={[Math.PI / 2, 0, 0]}>
         <capsuleGeometry args={[0.6, 1.8, 8, 16]} />
@@ -338,7 +377,7 @@ const WindModel: React.FC<{
       <group position={[0, 12.0, 1.8]} ref={rotorRef}>
         <mesh>
           <sphereGeometry args={[0.7, 16, 16]} />
-          <meshStandardMaterial color="#0284c7" />
+          <meshStandardMaterial color={riskStatus === 'compromised' ? '#f43f5e' : '#0284c7'} />
         </mesh>
         {[0, 120, 240].map((deg) => (
           <group key={deg} rotation={[0, 0, (deg * Math.PI) / 180]}>
@@ -378,16 +417,27 @@ const WindModel: React.FC<{
 
       <mesh position={[0, 0.2, 0]}>
         <cylinderGeometry args={[12, 12.5, 0.4, 32]} />
-        <meshBasicMaterial color={isSelected ? '#38bdf8' : '#10b981'} wireframe />
+        <meshBasicMaterial color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : '#10b981'} wireframe />
       </mesh>
 
       <Html position={[0, 16, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-emerald-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(16,185,129,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-emerald-400'
+        }`}>
           <div className="text-xs text-emerald-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
-            <Wind className="w-3.5 h-3.5 text-emerald-400" /> {gen.name}
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Wind className="w-3.5 h-3.5 text-emerald-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{gen.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {isOnline ? `${Math.round(gen.curMW)} MW • Kappatagudda Ridge` : 'OFFLINE'}
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : isOnline ? `${Math.round(gen.curMW)} MW • Kappatagudda Ridge` : 'OFFLINE'}
           </div>
         </div>
       </Html>
@@ -463,14 +513,27 @@ const SubstationModel: React.FC<{
       {/* Perimeter Grounding Grid */}
       <mesh position={[0, 0.1, 0]}>
         <boxGeometry args={[13, 0.2, 12]} />
-        <meshBasicMaterial color={isSelected ? '#38bdf8' : '#818cf8'} wireframe />
+        <meshBasicMaterial color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : '#818cf8'} wireframe />
       </mesh>
 
       <Html position={[0, 9.5, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-indigo-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(129,140,248,0.5)]">
-          <div className="text-xs text-indigo-300 font-bold whitespace-nowrap">{sub.name}</div>
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(129,140,248,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-indigo-400'
+        }`}>
+          <div className="text-xs text-indigo-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Zap className="w-3.5 h-3.5 text-indigo-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{sub.name}</span>
+          </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {sub.highVoltageKV}kV Bulk Hub • {sub.activeThroughputMW}MW
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : `${sub.highVoltageKV}kV Bulk Hub • ${sub.activeThroughputMW}MW`}
           </div>
         </div>
       </Html>
@@ -487,6 +550,8 @@ const GitCityBengaluruCluster: React.FC<{
   onLeave: () => void;
 }> = ({ load, isSelected, onHover, onLeave }) => {
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[load.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[load.id]?.riskScore);
 
   const buildings = useMemo(() => {
     const list: { x: number; z: number; width: number; depth: number; height: number; color: string }[] = [];
@@ -559,16 +624,27 @@ const GitCityBengaluruCluster: React.FC<{
       {/* Urban Substation Ring Base */}
       <mesh position={[0, 0.1, 0]}>
         <cylinderGeometry args={[15, 15.5, 0.2, 32]} />
-        <meshBasicMaterial color={load.isShed ? '#f43f5e' : '#f59e0b'} wireframe />
+        <meshBasicMaterial color={isSelected ? '#38bdf8' : riskStatus === 'compromised' || load.isShed ? '#f43f5e' : riskStatus === 'suspicious' ? '#f59e0b' : '#f59e0b'} wireframe />
       </mesh>
 
       <Html position={[0, 20, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-amber-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(245,158,11,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-amber-400'
+        }`}>
           <div className="text-xs text-amber-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
-            <Building className="w-3.5 h-3.5 text-amber-400" /> {load.name}
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Building className="w-3.5 h-3.5 text-amber-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{load.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {load.isShed ? 'SHED' : `${Math.round(load.curDemandMW)} MW • Tier ${load.priorityTier} • ${load.buildingCount} Towers`}
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : load.isShed ? 'SHED' : `${Math.round(load.curDemandMW)} MW • Tier ${load.priorityTier} • ${load.buildingCount} Towers`}
           </div>
         </div>
       </Html>

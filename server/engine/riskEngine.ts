@@ -23,6 +23,10 @@ export interface RiskEvaluationResult {
 }
 
 const CATEGORY_SEVERITY_WEIGHTS: Record<AttackCategory, number> = {
+  ransomware: 92,
+  dos_attack: 78,
+  unauthorized_insider: 88,
+  credential_stuffing: 70,
   unauthorized_scada_access: 85,
   abnormal_generator_shutdown: 95,
   suspicious_substation_switching: 90,
@@ -33,7 +37,6 @@ const CATEGORY_SEVERITY_WEIGHTS: Record<AttackCategory, number> = {
   repeated_auth_failure: 45,
   suspicious_remote_login: 55,
   abnormal_grid_telemetry: 50,
-  dos_attack: 60,
   data_exfiltration: 65,
   unknown: 40,
 };

@@ -13,6 +13,7 @@ import { RiskAlertsPanel } from './components/cyber/RiskAlertsPanel';
 import { FinancialAnalyzer } from './components/cyber/FinancialAnalyzer';
 import { LossAnalysisDashboard } from './components/cyber/LossAnalysisDashboard';
 import { AIChatPanel } from './components/cyber/AIChatPanel';
+import { AttackEnginePanel } from './components/cyber/AttackEnginePanel';
 
 export function App() {
   const tick = useGridStore((s) => s.tick);
@@ -96,6 +97,7 @@ export function App() {
           </>
         )}
 
+        {activeNavTab === 'attacks' && <AttackEnginePanel />}
         {activeNavTab === 'detection' && <RiskDetectionPanel />}
         {activeNavTab === 'alerts' && <RiskAlertsPanel />}
         {activeNavTab === 'financial' && <FinancialAnalyzer />}

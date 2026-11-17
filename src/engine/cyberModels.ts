@@ -4,6 +4,10 @@
 
 /** Attack categories detected by the risk engine */
 export type AttackCategory =
+  | 'ransomware'
+  | 'dos_attack'
+  | 'unauthorized_insider'
+  | 'credential_stuffing'
   | 'unauthorized_scada_access'
   | 'suspicious_remote_login'
   | 'unauthorized_control_command'
@@ -14,7 +18,6 @@ export type AttackCategory =
   | 'unauthorized_agc_modification'
   | 'abnormal_grid_telemetry'
   | 'malware_detected'
-  | 'dos_attack'
   | 'data_exfiltration'
   | 'unknown';
 
