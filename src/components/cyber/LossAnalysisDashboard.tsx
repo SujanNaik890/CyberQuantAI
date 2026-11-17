@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { useCyberStore } from '../../store/cyberStore';
 import { 
-  BarChart3, 
   PieChart, 
   TrendingUp, 
   ShieldCheck, 
@@ -14,23 +13,20 @@ import {
   ArrowUpRight,
   TrendingDown,
   Sparkles,
-  Filter,
-  RefreshCw,
-  Cpu,
-  Clock
+  Clock,
+  ChevronRight
 } from 'lucide-react';
 
 export const LossAnalysisDashboard: React.FC = () => {
   const financialSummary = useCyberStore((s) => s.financialSummary);
   const incidents = useCyberStore((s) => s.incidents);
 
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'CRITICAL' | 'HIGH' | 'MEDIUM'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'CRITICAL' | 'HIGH'>('ALL');
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [hoveredSlice, setHoveredSlice] = useState<number | null>(null);
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [hoveredHour, setHoveredHour] = useState<number | null>(null);
 
   const pieCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const barCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Smooth entrance animation timing
@@ -71,23 +67,15 @@ export const LossAnalysisDashboard: React.FC = () => {
     ];
   }, [financialSummary]);
 
-  // Asset Exposure Data
-  const assetData = useMemo(() => {
-    if (financialSummary.assetExposure.length > 0) {
-      return financialSummary.assetExposure.map((a, i) => ({
-        assetName: a.assetName,
-        exposure: a.exposure,
-        category: i === 0 ? 'CRITICAL' : i === 1 ? 'HIGH' : 'MEDIUM',
-        riskScore: i === 0 ? 92 : i === 1 ? 84 : 70 - i * 5,
-      }));
-    }
-    return [
-      { assetName: 'Kaiga Atomic Nuclear Station', exposure: 52400000, category: 'CRITICAL', riskScore: 92 },
-      { assetName: 'Sharavathi Hydro Powerhouse', exposure: 38200000, category: 'HIGH', riskScore: 84 },
-      { assetName: 'Nelamangala 400kV Bulk Substation', exposure: 29500000, category: 'HIGH', riskScore: 78 },
-      { assetName: 'Pavagada Shakti Sthala 2GW Solar', exposure: 16800000, category: 'MEDIUM', riskScore: 65 },
-    ];
-  }, [financialSummary]);
+  // Outage progression timeline points
+  const progressionPoints = useMemo(() => [
+    { hour: '1h', baseline: 18000000, mitigated: 4500000, diff: '75% Avoided' },
+    { hour: '2h', baseline: 39000000, mitigated: 9800000, diff: '74% Avoided' },
+    { hour: '3h', baseline: 64000000, mitigated: 16200000, diff: '74% Avoided' },
+    { hour: '4h', baseline: 92000000, mitigated: 23500000, diff: '74% Avoided' },
+    { hour: '6h', baseline: 145000000, mitigated: 38000000, diff: '73% Avoided' },
+    { hour: '8h', baseline: 210000000, mitigated: 52000000, diff: '75% Avoided' },
+  ], []);
 
   // Render Interactive Animated Donut Chart
   useEffect(() => {
@@ -122,11 +110,6 @@ export const LossAnalysisDashboard: React.FC = () => {
       ctx.arc(centerX, centerY, currentInner, endAngle, startAngle, true);
       ctx.closePath();
 
-      // Cyber Gradient
-      const grad = ctx.createRadialGradient(centerX, centerY, currentInner, centerX, centerY, currentRadius);
-      grad.addColorStop(0, slice.color);
-      grad.addColorStop(1, '#050b14');
-
       ctx.fillStyle = slice.color;
       ctx.shadowColor = slice.glow;
       ctx.shadowBlur = isHovered ? 20 : 10;
@@ -151,101 +134,6 @@ export const LossAnalysisDashboard: React.FC = () => {
     ctx.setLineDash([]);
   }, [slices, animatedProgress, hoveredSlice]);
 
-  // Render Interactive Animated Asset Exposure Bar Chart
-  useEffect(() => {
-    const canvas = barCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
-
-    const maxVal = Math.max(...assetData.map((d) => d.exposure), 1);
-    const leftMargin = 30;
-    const bottomMargin = 40;
-    const chartWidth = width - leftMargin - 20;
-    const chartHeight = height - bottomMargin - 25;
-    const barWidth = chartWidth / assetData.length;
-
-    // Draw Grid Lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-    for (let i = 1; i <= 4; i++) {
-      const y = height - bottomMargin - (chartHeight / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(leftMargin, y);
-      ctx.lineTo(width - 20, y);
-      ctx.stroke();
-    }
-
-    assetData.forEach((item, idx) => {
-      const targetBarH = (item.exposure / maxVal) * chartHeight;
-      const barH = targetBarH * animatedProgress;
-      const x = leftMargin + idx * barWidth + (barWidth * 0.15);
-      const y = height - bottomMargin - barH;
-      const w = barWidth * 0.7;
-
-      const isHovered = hoveredBar === idx;
-
-      // Gradient Fill
-      const grad = ctx.createLinearGradient(0, y, 0, y + barH);
-      if (item.category === 'CRITICAL' || idx === 0) {
-        grad.addColorStop(0, '#ef4444');
-        grad.addColorStop(1, '#7f1d1d');
-      } else if (item.category === 'HIGH' || idx === 1) {
-        grad.addColorStop(0, '#00f0ff');
-        grad.addColorStop(1, '#0284c7');
-      } else {
-        grad.addColorStop(0, '#f59e0b');
-        grad.addColorStop(1, '#78350f');
-      }
-
-      ctx.save();
-      ctx.beginPath();
-      // Rounded top
-      const r = 4;
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + barH);
-      ctx.lineTo(x, y + barH);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-
-      ctx.fillStyle = grad;
-      ctx.shadowColor = idx === 0 ? 'rgba(239, 68, 68, 0.45)' : 'rgba(0, 240, 255, 0.35)';
-      ctx.shadowBlur = isHovered ? 16 : 8;
-      ctx.fill();
-
-      // Top glowing cap line
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(x + 2, y);
-      ctx.lineTo(x + w - 2, y);
-      ctx.stroke();
-
-      ctx.restore();
-
-      // Labels below
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      const shortName = item.assetName.split(' ')[0];
-      ctx.fillText(shortName, x + w / 2, height - bottomMargin + 16);
-
-      // Amount label on top
-      if (animatedProgress > 0.4) {
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 10px monospace';
-        ctx.fillText(formatINR(item.exposure), x + w / 2, y - 8);
-      }
-    });
-  }, [assetData, animatedProgress, hoveredBar]);
-
   // Render Cumulative Downtime Loss Curve (Timeline)
   useEffect(() => {
     const canvas = lineCanvasRef.current;
@@ -257,21 +145,12 @@ export const LossAnalysisDashboard: React.FC = () => {
     const height = canvas.height;
     ctx.clearRect(0, 0, width, height);
 
-    // Timeline data points: Hour 1, Hour 2, Hour 3, Hour 4, Hour 6, Hour 8
-    const points = [
-      { hour: '1h', baseline: 18000000, mitigated: 4500000 },
-      { hour: '2h', baseline: 39000000, mitigated: 9800000 },
-      { hour: '3h', baseline: 64000000, mitigated: 16200000 },
-      { hour: '4h', baseline: 92000000, mitigated: 23500000 },
-      { hour: '6h', baseline: 145000000, mitigated: 38000000 },
-      { hour: '8h', baseline: 210000000, mitigated: 52000000 },
-    ];
-
-    const maxVal = points[points.length - 1].baseline;
-    const left = 45;
+    const points = progressionPoints;
+    const maxVal = points[points.length - 1].baseline * 1.05;
+    const left = 35;
     const right = width - 25;
     const top = 25;
-    const bottom = height - 30;
+    const bottom = height - 35;
     const w = right - left;
     const h = bottom - top;
 
@@ -291,7 +170,6 @@ export const LossAnalysisDashboard: React.FC = () => {
     ctx.beginPath();
     points.forEach((p, i) => {
       const x = left + (w / (points.length - 1)) * i;
-      const targetY = bottom - (p.baseline / maxVal) * h;
       const y = bottom - ((p.baseline / maxVal) * h * animatedProgress);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -307,7 +185,7 @@ export const LossAnalysisDashboard: React.FC = () => {
     ctx.lineTo(left, bottom);
     ctx.closePath();
     const redGrad = ctx.createLinearGradient(0, top, 0, bottom);
-    redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
+    redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.22)');
     redGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
     ctx.fillStyle = redGrad;
     ctx.fill();
@@ -333,22 +211,57 @@ export const LossAnalysisDashboard: React.FC = () => {
     ctx.lineTo(left, bottom);
     ctx.closePath();
     const cyanGrad = ctx.createLinearGradient(0, top, 0, bottom);
-    cyanGrad.addColorStop(0, 'rgba(0, 240, 255, 0.22)');
+    cyanGrad.addColorStop(0, 'rgba(0, 240, 255, 0.25)');
     cyanGrad.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
     ctx.fillStyle = cyanGrad;
     ctx.fill();
     ctx.restore();
 
+    // Draw active hovered point highlight
+    if (hoveredHour !== null && hoveredHour >= 0 && hoveredHour < points.length) {
+      const p = points[hoveredHour];
+      const x = left + (w / (points.length - 1)) * hoveredHour;
+      const yRed = bottom - ((p.baseline / maxVal) * h * animatedProgress);
+      const yCyan = bottom - ((p.mitigated / maxVal) * h * animatedProgress);
+
+      // Vertical marker guide line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Red dot
+      ctx.fillStyle = '#ef4444';
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.8)';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(x, yRed, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cyan dot
+      ctx.fillStyle = '#00f0ff';
+      ctx.shadowColor = 'rgba(0, 240, 255, 0.9)';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(x, yCyan, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
     // X-Axis Hour Labels
     points.forEach((p, i) => {
       const x = left + (w / (points.length - 1)) * i;
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
+      ctx.fillStyle = hoveredHour === i ? '#00f0ff' : '#94a3b8';
+      ctx.font = hoveredHour === i ? 'bold 11px monospace' : '10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(p.hour, x, height - 10);
+      ctx.fillText(p.hour, x, height - 12);
     });
 
-  }, [animatedProgress]);
+  }, [animatedProgress, hoveredHour, progressionPoints]);
 
   // Before & After Security Controls Model
   const baselineExposure = financialSummary.totalFinancialExposure || 120000000;
@@ -464,7 +377,7 @@ export const LossAnalysisDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Interactive Charts Row */}
+      {/* Main 2-Column Section: Donut Share (Left) + Cumulative Progression Curve (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Donut Loss Breakdown */}
         <div className="p-5 rounded-xl bg-[#080d1c] border border-[#1e293b] flex flex-col items-center shadow-lg relative">
@@ -539,84 +452,70 @@ export const LossAnalysisDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Chart 2: Asset-wise Financial Vulnerability */}
+        {/* Chart 2: Cumulative Outage Financial Progression: Unmitigated Breach vs. IEC 62443 Zero-Trust */}
         <div className="p-5 rounded-xl bg-[#080d1c] border border-[#1e293b] flex flex-col shadow-lg">
-          <div className="flex items-center justify-between w-full mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-cyan-400" />
+              <Clock className="w-4 h-4 text-cyan-400" />
               <span className="font-bold text-slate-100 text-xs tracking-wide">
-                Asset-Wise Financial Exposure &amp; Criticality
+                Cumulative Outage Financial Progression
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-mono">Node Risk Ranking</span>
+            <span className="text-[10px] text-cyan-300 font-mono">Unmitigated Breach vs. IEC 62443</span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center min-h-[240px]">
+          {/* Legend Badges */}
+          <div className="flex items-center gap-4 text-[10px] mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-1 bg-rose-500 rounded-full" />
+              <span className="text-rose-300">Unmitigated Breach</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-1 bg-cyan-400 rounded-full" />
+              <span className="text-cyan-300 font-semibold">IEC 62443 Zero-Trust</span>
+            </div>
+          </div>
+
+          {/* Interactive Line Chart Canvas */}
+          <div className="flex-1 flex items-center justify-center min-h-[220px]">
             <canvas
-              ref={barCanvasRef}
+              ref={lineCanvasRef}
               width={460}
-              height={240}
+              height={230}
               className="w-full h-auto cursor-pointer"
               onMouseMove={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left - 30;
-                const slotW = (rect.width - 50) / assetData.length;
-                const idx = Math.floor(x / slotW);
-                if (idx >= 0 && idx < assetData.length) {
-                  setHoveredBar(idx);
+                const x = e.clientX - rect.left - 35;
+                const slotW = (rect.width - 60) / (progressionPoints.length - 1);
+                const idx = Math.round(x / slotW);
+                if (idx >= 0 && idx < progressionPoints.length) {
+                  setHoveredHour(idx);
                 } else {
-                  setHoveredBar(null);
+                  setHoveredHour(null);
                 }
               }}
-              onMouseLeave={() => setHoveredBar(null)}
+              onMouseLeave={() => setHoveredHour(null)}
             />
           </div>
 
-          {/* Asset Breakdown Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-[#1e293b] text-[10px]">
-            {assetData.map((item, idx) => (
+          {/* Interactive Timeline Hover Metrics Bar */}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-3 border-t border-[#1e293b] text-[10px]">
+            {progressionPoints.map((pt, idx) => (
               <div
                 key={idx}
-                className={`p-2 rounded bg-[#0c1527] border transition-all ${
-                  hoveredBar === idx ? 'border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.2)]' : 'border-[#1e293b]'
+                onMouseEnter={() => setHoveredHour(idx)}
+                onMouseLeave={() => setHoveredHour(null)}
+                className={`p-1.5 rounded cursor-pointer transition-all text-center ${
+                  hoveredHour === idx ? 'bg-cyan-950/60 border border-cyan-400' : 'bg-[#0c1527] border border-[#1e293b]'
                 }`}
               >
-                <div className="text-slate-400 truncate font-semibold">{item.assetName.split(' ')[0]}</div>
-                <div className="font-extrabold text-cyan-300 text-xs mt-0.5">{formatINR(item.exposure)}</div>
-                <div className="text-rose-400 font-bold mt-0.5">Risk {item.riskScore || 85}/100</div>
+                <div className="text-slate-400 font-bold">{pt.hour} Outage</div>
+                <div className="text-rose-400 font-semibold mt-0.5">{formatINR(pt.baseline)}</div>
+                <div className="text-emerald-400 font-bold text-[9px] mt-0.5">{pt.diff}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Realistic Cumulative Downtime Loss Curve vs Hardened State */}
-      <div className="p-5 rounded-xl bg-[#080d1c] border border-[#1e293b] shadow-lg space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-cyan-400" />
-            <span className="font-bold text-slate-100 text-xs tracking-wide">
-              Cumulative Outage Financial Progression: Unmitigated Breach vs. IEC 62443 Zero-Trust
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-1 bg-rose-500 rounded-full" />
-              <span className="text-rose-300">Unmitigated Attack (Legacy SCADA)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-1 bg-cyan-400 rounded-full" />
-              <span className="text-cyan-300 font-semibold">Zero-Trust Hardened (IEC 62443)</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full h-52 flex items-center justify-center">
-          <canvas ref={lineCanvasRef} width={920} height={210} className="w-full h-full" />
-        </div>
-        <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
-          * Actuarial curve modeling based on escalating Value of Lost Load (VoLL) multipliers and compounding emergency spot replacement procurement as generation deficit prolongs past spinning reserve windows.
-        </p>
       </div>
 
       {/* Before & After Security Controls Model (NIST CSF & IEC 62443 ROSI) */}
