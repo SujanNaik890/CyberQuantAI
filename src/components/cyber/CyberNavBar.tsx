@@ -89,7 +89,7 @@ export const CyberNavBar: React.FC = () => {
         </button>
       </div>
 
-      {/* Simulated Strike Quick Trigger & Backend Status */}
+      {/* Backend Link Status */}
       <div className="flex items-center gap-3">
         {/* Connection status */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0c1527] border border-[#1e293b]">
@@ -97,29 +97,6 @@ export const CyberNavBar: React.FC = () => {
           <span className="text-[11px] text-slate-400">
             {isConnected ? 'OT-SOC LINK: LIVE' : 'DISCONNECTED'}
           </span>
-        </div>
-
-        {/* Quick Strike Simulator Buttons */}
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-slate-500 uppercase mr-1">Inject:</span>
-          <button
-            onClick={() => triggerTestAttack('kaiga-scada')}
-            className="px-2 py-1 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-[10px] font-semibold transition-colors"
-          >
-            Kaiga SCADA
-          </button>
-          <button
-            onClick={() => triggerTestAttack('sharavathi-trip')}
-            className="px-2 py-1 rounded bg-amber-950/60 hover:bg-amber-900 border border-amber-500/40 text-amber-300 text-[10px] font-semibold transition-colors"
-          >
-            Sharavathi Trip
-          </button>
-          <button
-            onClick={() => triggerTestAttack('nelamangala-switch')}
-            className="px-2 py-1 rounded bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-[10px] font-semibold transition-colors"
-          >
-            400kV Breaker
-          </button>
         </div>
       </div>
     </div>
