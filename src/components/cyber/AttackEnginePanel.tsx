@@ -203,38 +203,21 @@ export const AttackEnginePanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Real-time Financial Exposure Snapshot & Global Reset */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-4 bg-[#0a1324] px-4 py-2 rounded-lg border border-[#1e293b] font-mono text-xs">
-            <div>
-              <div className="text-[10px] text-slate-400 uppercase">Live Total Exposure</div>
-              <div className="text-sm font-bold text-rose-400">
-                ₹{(financialSummary.totalFinancialExposure / 10000000).toFixed(2)} Cr
-              </div>
-            </div>
-            <div className="h-8 w-px bg-slate-800" />
-            <div>
-              <div className="text-[10px] text-slate-400 uppercase">Active Risk Alerts</div>
-              <div className="text-sm font-bold text-amber-400 flex items-center gap-1">
-                <AlertOctagon className="w-3.5 h-3.5 text-amber-400" /> {alerts.length}
-              </div>
+        {/* Real-time Financial Exposure Snapshot */}
+        <div className="flex items-center gap-4 bg-[#0a1324] px-4 py-2.5 rounded-lg border border-[#1e293b] font-mono text-xs">
+          <div>
+            <div className="text-[10px] text-slate-400 uppercase">Live Total Exposure</div>
+            <div className="text-sm font-bold text-rose-400">
+              ₹{(financialSummary.totalFinancialExposure / 10000000).toFixed(2)} Cr
             </div>
           </div>
-
-          <button
-            onClick={async () => {
-              const resetGrid = useGridStore.getState().resetGrid;
-              resetGrid();
-              const resetAll = useCyberStore.getState().resetAllGridAndAttacks;
-              await resetAll();
-              setLastExecutionResult(null);
-            }}
-            title="Reset all attacks, alert flags, and restore grid back to normal"
-            className="px-3.5 py-2.5 rounded-lg bg-[#0c162a] border border-cyan-500/40 hover:bg-cyan-950/40 text-cyan-300 font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-[0_0_12px_rgba(6,182,212,0.2)]"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-            <span>RESET ALL ATTACKS</span>
-          </button>
+          <div className="h-8 w-px bg-slate-800" />
+          <div>
+            <div className="text-[10px] text-slate-400 uppercase">Active Risk Alerts</div>
+            <div className="text-sm font-bold text-amber-400 flex items-center gap-1">
+              <AlertOctagon className="w-3.5 h-3.5 text-amber-400" /> {alerts.length}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -382,7 +365,7 @@ export const AttackEnginePanel: React.FC = () => {
               <button
                 disabled={isExecuting}
                 onClick={handleLaunch}
-                className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-mono font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(244,63,94,0.4)] disabled:opacity-50"
+                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-mono font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(244,63,94,0.4)] disabled:opacity-50"
               >
                 {isExecuting ? (
                   <>
@@ -395,21 +378,6 @@ export const AttackEnginePanel: React.FC = () => {
                     <span>EXECUTE CYBER ATTACK ON TARGET</span>
                   </>
                 )}
-              </button>
-
-              <button
-                onClick={() => {
-                  if (window.opener) {
-                    window.opener.focus();
-                  } else {
-                    window.open(`${window.location.origin}/#grid`, '_blank');
-                  }
-                }}
-                className="px-4 py-2.5 rounded-lg bg-[#0c162a] border border-[#1e293b] hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all"
-                title="View in main CyberQuant 3D Grid tab"
-              >
-                <span>OPEN 3D GRID TAB</span>
-                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
