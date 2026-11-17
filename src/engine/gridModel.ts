@@ -15,6 +15,16 @@ export interface Generator {
   connectedBusId: string; // Substation or direct node ID
   x: number;
   y: number;
+  // Specific simulation telemetry
+  simMetrics: {
+    efficiency: number; // 0-100%
+    primaryParamName: string; // e.g. "Core Temp", "Water Flow", "Wind Velocity", "Solar Irradiance"
+    primaryParamValue: number;
+    primaryParamUnit: string;
+    secondaryParamName: string; // e.g. "Neutron Flux", "Head Height", "RPM", "Inverter Temp"
+    secondaryParamValue: number;
+    secondaryParamUnit: string;
+  };
 }
 
 export interface Substation {
@@ -37,9 +47,9 @@ export interface LoadCenter {
   type: LoadType;
   baseDemandMW: number;
   curDemandMW: number;
-  priorityTier: 1 | 2 | 3; // 1 = Critical (Hospital/Datacenter), 2 = Urban, 3 = Heavy Industrial (shed first)
+  priorityTier: 1 | 2 | 3; // 1 = Critical, 2 = Urban, 3 = Heavy Industrial
   isShed: boolean;
-  connectedBusId: string; // Substation ID
+  connectedBusId: string;
   x: number;
   y: number;
 }
@@ -50,13 +60,13 @@ export interface TransmissionLine {
   fromNodeId: string;
   toNodeId: string;
   voltageKV: number;
-  reactance_X: number; // Per-unit or ohms (typically 0.05 to 0.25)
+  reactance_X: number;
   resistance_R: number;
   thermalLimitMW: number;
-  curFlowMW: number; // Signed: positive = from -> to, negative = to -> from
+  curFlowMW: number;
   isTripped: boolean;
   lossMW: number;
-  overloadDuration_s: number; // Track overload for auto-trip (> 3.0s)
+  overloadDuration_s: number;
 }
 
 export interface GridEventLog {
@@ -75,7 +85,7 @@ export interface GridTelemetry {
   nominalFreqHz: 50.00 | 60.00;
   agcActive: boolean;
   baseDemandScale: number; // 0.5 to 1.5
-  simulationSpeed: number; // 1x, 2x, etc.
+  simulationSpeed: number;
 }
 
 export interface GridScenario {

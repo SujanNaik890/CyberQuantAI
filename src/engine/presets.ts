@@ -1,23 +1,32 @@
 import { Generator, Substation, LoadCenter, TransmissionLine, GridScenario } from './gridModel';
 
 export function getInitialScenario(): GridScenario {
-  // 4 Power Plants across different types
+  // 4 Power Plants: Nuclear, Hydro, Solar PV, and Wind
   const generators: Generator[] = [
     {
       id: 'GEN-NUC-01',
-      name: 'Titan Point Nuclear Unit 1 & 2',
+      name: 'Titan Point Nuclear Reactor',
       type: 'nuclear',
       voltageRating: 500,
       pMinMW: 300,
       pMaxMW: 1200,
-      curMW: 950,
-      targetMW: 950,
+      curMW: 900,
+      targetMW: 900,
       rampRateMW_s: 15,
       marginalCost_MWh: 18.5,
       status: 'online',
       connectedBusId: 'SUB-NORTH-500',
-      x: 180,
-      y: 120,
+      x: -35,
+      y: 25,
+      simMetrics: {
+        efficiency: 94.2,
+        primaryParamName: 'Core Temp',
+        primaryParamValue: 312.4,
+        primaryParamUnit: '°C',
+        secondaryParamName: 'Neutron Flux',
+        secondaryParamValue: 98.1,
+        secondaryParamUnit: '%',
+      },
     },
     {
       id: 'GEN-HYD-02',
@@ -28,48 +37,75 @@ export function getInitialScenario(): GridScenario {
       pMaxMW: 700,
       curMW: 450,
       targetMW: 450,
-      rampRateMW_s: 80, // Very agile
+      rampRateMW_s: 80,
       marginalCost_MWh: 9.2,
       status: 'online',
       connectedBusId: 'SUB-NORTH-500',
-      x: 720,
-      y: 110,
+      x: 35,
+      y: 25,
+      simMetrics: {
+        efficiency: 91.5,
+        primaryParamName: 'Penstock Water Flow',
+        primaryParamValue: 420.0,
+        primaryParamUnit: 'm³/s',
+        secondaryParamName: 'Head Height',
+        secondaryParamValue: 145.2,
+        secondaryParamUnit: 'm',
+      },
     },
     {
-      id: 'GEN-GAS-03',
-      name: 'Apex Combined-Cycle Gas Peaker',
-      type: 'thermal_gas',
+      id: 'GEN-SOL-03',
+      name: 'Helios Concentrated Solar Farm',
+      type: 'solar_pv',
       voltageRating: 220,
-      pMinMW: 80,
-      pMaxMW: 600,
-      curMW: 320,
-      targetMW: 320,
-      rampRateMW_s: 45,
-      marginalCost_MWh: 64.0,
+      pMinMW: 0,
+      pMaxMW: 500,
+      curMW: 310,
+      targetMW: 310,
+      rampRateMW_s: 50,
+      marginalCost_MWh: 5.0,
       status: 'online',
       connectedBusId: 'SUB-CENTRAL-220',
-      x: 160,
-      y: 500,
+      x: -35,
+      y: -25,
+      simMetrics: {
+        efficiency: 22.8,
+        primaryParamName: 'Solar Irradiance',
+        primaryParamValue: 890.0,
+        primaryParamUnit: 'W/m²',
+        secondaryParamName: 'Inverter Temp',
+        secondaryParamValue: 48.6,
+        secondaryParamUnit: '°C',
+      },
     },
     {
       id: 'GEN-WND-04',
-      name: 'Zephyr Offshore Wind Array',
+      name: 'Zephyr Offshore Wind Turbine Park',
       type: 'wind',
       voltageRating: 220,
       pMinMW: 0,
-      pMaxMW: 400,
+      pMaxMW: 450,
       curMW: 260,
       targetMW: 260,
-      rampRateMW_s: 25,
+      rampRateMW_s: 30,
       marginalCost_MWh: 4.5,
       status: 'online',
       connectedBusId: 'SUB-COASTAL-220',
-      x: 760,
-      y: 520,
+      x: 35,
+      y: -25,
+      simMetrics: {
+        efficiency: 47.1,
+        primaryParamName: 'Wind Velocity',
+        primaryParamValue: 11.4,
+        primaryParamUnit: 'm/s',
+        secondaryParamName: 'Rotor Speed',
+        secondaryParamValue: 16.2,
+        secondaryParamUnit: 'RPM',
+      },
     },
   ];
 
-  // 4 Major Substations (2 Bulk 500kV, 2 Regional 220kV Hubs)
+  // 4 Major Substations
   const substations: Substation[] = [
     {
       id: 'SUB-NORTH-500',
@@ -77,10 +113,10 @@ export function getInitialScenario(): GridScenario {
       highVoltageKV: 500,
       lowVoltageKV: 220,
       busStatus: 'energized',
-      activeThroughputMW: 1400,
-      voltageAngleRad: 0, // Slack Bus reference (0 rad)
-      x: 350,
-      y: 160,
+      activeThroughputMW: 1350,
+      voltageAngleRad: 0,
+      x: 0,
+      y: 18,
     },
     {
       id: 'SUB-EAST-500',
@@ -90,8 +126,8 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 900,
       voltageAngleRad: 0,
-      x: 600,
-      y: 190,
+      x: 18,
+      y: 5,
     },
     {
       id: 'SUB-CENTRAL-220',
@@ -101,8 +137,8 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 1100,
       voltageAngleRad: 0,
-      x: 340,
-      y: 380,
+      x: -18,
+      y: -5,
     },
     {
       id: 'SUB-COASTAL-220',
@@ -112,8 +148,8 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 850,
       voltageAngleRad: 0,
-      x: 610,
-      y: 390,
+      x: 0,
+      y: -18,
     },
   ];
 
@@ -121,15 +157,15 @@ export function getInitialScenario(): GridScenario {
   const loads: LoadCenter[] = [
     {
       id: 'LOAD-IND-01',
-      name: 'AeroTech Gigafactory & Smelter',
+      name: 'AeroTech Industrial Complex',
       type: 'industrial',
       baseDemandMW: 580,
       curDemandMW: 580,
-      priorityTier: 3, // Non-essential heavy industry (shed first during emergencies)
+      priorityTier: 3,
       isShed: false,
       connectedBusId: 'SUB-CENTRAL-220',
-      x: 180,
-      y: 310,
+      x: -45,
+      y: 0,
     },
     {
       id: 'LOAD-METRO-02',
@@ -137,11 +173,11 @@ export function getInitialScenario(): GridScenario {
       type: 'residential',
       baseDemandMW: 780,
       curDemandMW: 780,
-      priorityTier: 1, // Critical infrastructure
+      priorityTier: 1,
       isShed: false,
       connectedBusId: 'SUB-CENTRAL-220',
-      x: 350,
-      y: 560,
+      x: 0,
+      y: 0,
     },
     {
       id: 'LOAD-PORT-03',
@@ -149,17 +185,16 @@ export function getInitialScenario(): GridScenario {
       type: 'commercial',
       baseDemandMW: 420,
       curDemandMW: 420,
-      priorityTier: 2, // Commercial hub
+      priorityTier: 2,
       isShed: false,
       connectedBusId: 'SUB-COASTAL-220',
-      x: 580,
-      y: 570,
+      x: 45,
+      y: 0,
     },
   ];
 
-  // 11 Transmission Lines with interconnections, parallel feeds, and cross-ties
+  // 11 Corridors
   const lines: TransmissionLine[] = [
-    // 500kV Backbone Transmission
     {
       id: 'TL-500-01',
       name: 'Highland - Verdant 500kV Line 1',
@@ -174,7 +209,6 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-    // Inter-tie Transformers / Transmission from 500kV to 220kV
     {
       id: 'TL-TIE-02',
       name: 'North Bulk Feed to Midland (Line A)',
@@ -191,21 +225,7 @@ export function getInitialScenario(): GridScenario {
     },
     {
       id: 'TL-TIE-03',
-      name: 'North Bulk Feed to Midland (Line B)',
-      fromNodeId: 'SUB-NORTH-500',
-      toNodeId: 'SUB-CENTRAL-220',
-      voltageKV: 500,
-      reactance_X: 0.12,
-      resistance_R: 0.013,
-      thermalLimitMW: 900,
-      curFlowMW: 0,
-      isTripped: false,
-      lossMW: 0,
-      overloadDuration_s: 0,
-    },
-    {
-      id: 'TL-TIE-04',
-      name: 'East Intertie to Coastal Hub',
+      name: 'Verdant to Coastal Interchange',
       fromNodeId: 'SUB-EAST-500',
       toNodeId: 'SUB-COASTAL-220',
       voltageKV: 500,
@@ -217,24 +237,8 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-    // Diagonal corridor between North and Coastal
     {
-      id: 'TL-COR-05',
-      name: 'Cross-Basin Corridor',
-      fromNodeId: 'SUB-NORTH-500',
-      toNodeId: 'SUB-COASTAL-220',
-      voltageKV: 220,
-      reactance_X: 0.18,
-      resistance_R: 0.019,
-      thermalLimitMW: 550,
-      curFlowMW: 0,
-      isTripped: false,
-      lossMW: 0,
-      overloadDuration_s: 0,
-    },
-    // Midland to Coastal ring tie
-    {
-      id: 'TL-RNG-06',
+      id: 'TL-RNG-04',
       name: 'Southern 220kV Ring Tie',
       fromNodeId: 'SUB-CENTRAL-220',
       toNodeId: 'SUB-COASTAL-220',
@@ -247,11 +251,10 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-
     // Generator Infeeds
     {
       id: 'GEN-FEED-01',
-      name: 'Titan Nuclear Gen Infeed',
+      name: 'Titan Nuclear Generator Infeed',
       fromNodeId: 'GEN-NUC-01',
       toNodeId: 'SUB-NORTH-500',
       voltageKV: 500,
@@ -265,9 +268,9 @@ export function getInitialScenario(): GridScenario {
     },
     {
       id: 'GEN-FEED-02',
-      name: 'Cascade Hydro Gen Infeed',
+      name: 'Cascade Hydro Generator Infeed',
       fromNodeId: 'GEN-HYD-02',
-      toNodeId: 'SUB-EAST-500',
+      toNodeId: 'SUB-NORTH-500',
       voltageKV: 500,
       reactance_X: 0.04,
       resistance_R: 0.004,
@@ -279,13 +282,13 @@ export function getInitialScenario(): GridScenario {
     },
     {
       id: 'GEN-FEED-03',
-      name: 'Apex Gas Gen Infeed',
-      fromNodeId: 'GEN-GAS-03',
+      name: 'Helios Solar Generator Infeed',
+      fromNodeId: 'GEN-SOL-03',
       toNodeId: 'SUB-CENTRAL-220',
       voltageKV: 220,
       reactance_X: 0.04,
       resistance_R: 0.004,
-      thermalLimitMW: 750,
+      thermalLimitMW: 650,
       curFlowMW: 0,
       isTripped: false,
       lossMW: 0,
@@ -293,7 +296,7 @@ export function getInitialScenario(): GridScenario {
     },
     {
       id: 'GEN-FEED-04',
-      name: 'Zephyr Wind Gen Infeed',
+      name: 'Zephyr Wind Generator Infeed',
       fromNodeId: 'GEN-WND-04',
       toNodeId: 'SUB-COASTAL-220',
       voltageKV: 220,
@@ -305,8 +308,7 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-
-    // Load Infeeds
+    // Load Feeders
     {
       id: 'LOAD-FEED-01',
       name: 'AeroTech Industrial Feeder',
@@ -351,10 +353,5 @@ export function getInitialScenario(): GridScenario {
     },
   ];
 
-  return {
-    generators,
-    substations,
-    loads,
-    lines,
-  };
+  return { generators, substations, loads, lines };
 }

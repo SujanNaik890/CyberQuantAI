@@ -2,31 +2,23 @@ import { Generator, Substation, LoadCenter, TransmissionLine, GridTelemetry, Gri
 
 /**
  * Solve DC Power Flow with Bus Phase Angles & Admittance Matrix
- * DC Flow: P_ij = (theta_i - theta_j) / X_ij
- * For each node: Net Injection P_i = Sum_j [ (theta_i - theta_j) / X_ij ]
- * We solve for theta via Gauss-Seidel / Jacobi relaxation with slack bus pinned at 0 rad.
  */
 export function solveDCPowerFlow(
   substations: Substation[],
   lines: TransmissionLine[],
-  netBusInjections: Map<string, number> // Bus ID -> net MW injected (Gen - Load)
+  netBusInjections: Map<string, number>
 ): { busAngles: Map<string, number>; lineFlows: Map<string, { flowMW: number; lossMW: number }> } {
   const busAngles = new Map<string, number>();
   
-  // Select Slack Bus (First energized substation or SUB-NORTH-500)
   const slackBusId = substations.find(s => s.busStatus === 'energized')?.id || substations[0]?.id || '';
   
-  // Initialize angles
   substations.forEach((s) => {
     busAngles.set(s.id, 0);
   });
 
-  // Filter active lines (not tripped and connected buses exist)
   const activeLines = lines.filter(l => !l.isTripped);
-
-  // Iterative relaxation solver (50 iterations is plenty for 4-20 bus convergence)
   const MAX_ITER = 60;
-  const RELAXATION = 1.15; // Successive over-relaxation factor
+  const RELAXATION = 1.15;
 
   for (let iter = 0; iter < MAX_ITER; iter++) {
     for (const sub of substations) {
@@ -35,8 +27,7 @@ export function solveDCPowerFlow(
         continue;
       }
 
-      const pInj = netBusInjections.get(sub.id) || 0; // Net injection in MW
-      // Base MVA = 100 MVA, P_pu = P_MW / 100
+      const pInj = netBusInjections.get(sub.id) || 0;
       const P_pu = pInj / 100.0;
 
       let sumB_theta = 0;
@@ -44,7 +35,7 @@ export function solveDCPowerFlow(
 
       for (const line of activeLines) {
         if (line.reactance_X <= 0) continue;
-        const b = 1.0 / line.reactance_X; // susceptance
+        const b = 1.0 / line.reactance_X;
 
         if (line.fromNodeId === sub.id) {
           const otherAngle = busAngles.get(line.toNodeId) || 0;
@@ -58,7 +49,6 @@ export function solveDCPowerFlow(
       }
 
       if (sumB > 0.0001) {
-        // P_i = sumB * theta_i - sumB_theta => theta_i = (P_i + sumB_theta) / sumB
         const targetTheta = (P_pu + sumB_theta) / sumB;
         const currentTheta = busAngles.get(sub.id) || 0;
         busAngles.set(sub.id, currentTheta + RELAXATION * (targetTheta - currentTheta));
@@ -66,7 +56,6 @@ export function solveDCPowerFlow(
     }
   }
 
-  // Calculate resulting branch flows: P_ij = (theta_i - theta_j) / X_ij * S_base
   const lineFlows = new Map<string, { flowMW: number; lossMW: number }>();
   for (const line of lines) {
     if (line.isTripped) {
@@ -78,10 +67,8 @@ export function solveDCPowerFlow(
     const thetaTo = busAngles.get(line.toNodeId) || 0;
     const x = Math.max(0.001, line.reactance_X);
     const flow_pu = (thetaFrom - thetaTo) / x;
-    const flowMW = flow_pu * 100.0; // Scaled to MW
+    const flowMW = flow_pu * 100.0;
 
-    // Losses approximate: I^2 * R = (P/V)^2 * R
-    // Simplified AC/DC power loss: P_loss = flow^2 * R / (V_base/100)^2
     const vFactor = Math.max(1, line.voltageKV / 100);
     const lossMW = Math.min(Math.abs(flowMW) * 0.15, (flowMW * flowMW * line.resistance_R) / (vFactor * 50));
 
@@ -91,15 +78,6 @@ export function solveDCPowerFlow(
   return { busAngles, lineFlows };
 }
 
-/**
- * Step simulation physics by dt seconds:
- * 1. Automatic Generation Control (AGC) & Governor ramp
- * 2. Net bus injections calculation
- * 3. Power flow solve
- * 4. Swing equation for dynamic frequency
- * 5. Automatic Under-Frequency Load Shedding (UFLS) if < 48.5 Hz
- * 6. Line thermal overload detection & auto-trip
- */
 export function stepSimulation(
   generators: Generator[],
   substations: Substation[],
@@ -115,12 +93,12 @@ export function stepSimulation(
   lines: TransmissionLine[];
   telemetry: GridTelemetry;
 } {
-  const newGenerators = generators.map(g => ({ ...g }));
+  const newGenerators = generators.map(g => ({ ...g, simMetrics: { ...g.simMetrics } }));
   const newSubstations = substations.map(s => ({ ...s }));
   const newLoads = loads.map(l => ({ ...l }));
   const newLines = lines.map(l => ({ ...l }));
 
-  // 1. Calculate active demand per load center with baseDemandScale
+  // 1. Calculate active demand per load center
   let totalDemandMW = 0;
   for (const load of newLoads) {
     if (load.isShed) {
@@ -131,7 +109,7 @@ export function stepSimulation(
     }
   }
 
-  // Calculate current active generation
+  // 2. Calculate current active generation
   let totalGenMW = 0;
   for (const gen of newGenerators) {
     if (gen.status === 'online') {
@@ -141,19 +119,13 @@ export function stepSimulation(
     }
   }
 
-  // 2. AGC / Automatic Governor:
-  // If AGC is ON, dispatch online generators to eliminate power imbalance (Gen vs Demand + estimated loss)
+  // 3. AGC / Governor
   const powerImbalanceMW = totalGenMW - totalDemandMW - telemetry.netLossesMW;
 
   if (telemetry.agcActive) {
-    // Sort online generators by marginal cost (economic dispatch)
-    // If deficit: ramp cheapest with spare capacity up
-    // If surplus: ramp most expensive generator down
     if (powerImbalanceMW < -5) {
-      // Deficit: need more generation
       const neededMW = Math.abs(powerImbalanceMW);
       let remaining = neededMW;
-      
       const capableGens = newGenerators
         .filter(g => g.status === 'online' && g.curMW < g.pMaxMW)
         .sort((a, b) => a.marginalCost_MWh - b.marginalCost_MWh);
@@ -167,13 +139,11 @@ export function stepSimulation(
         if (remaining <= 0) break;
       }
     } else if (powerImbalanceMW > 5) {
-      // Surplus: need less generation
       const surplusMW = powerImbalanceMW;
       let remaining = surplusMW;
-      
       const capableGens = newGenerators
         .filter(g => g.status === 'online' && g.curMW > g.pMinMW)
-        .sort((a, b) => b.marginalCost_MWh - a.marginalCost_MWh); // Drop high cost first
+        .sort((a, b) => b.marginalCost_MWh - a.marginalCost_MWh);
 
       for (const gen of capableGens) {
         const reducible = gen.curMW - gen.pMinMW;
@@ -185,7 +155,6 @@ export function stepSimulation(
       }
     }
   } else {
-    // Manual Setpoint adjustment ramp: ramp generators towards targetMW
     for (const gen of newGenerators) {
       if (gen.status === 'online') {
         const diff = gen.targetMW - gen.curMW;
@@ -201,15 +170,40 @@ export function stepSimulation(
     }
   }
 
-  // Recalculate totalGenMW after ramp
+  // Dynamic simulation parameters for each generator type
+  for (const gen of newGenerators) {
+    const isOnline = gen.status === 'online';
+    const outputRatio = isOnline ? gen.curMW / gen.pMaxMW : 0;
+
+    if (gen.type === 'nuclear') {
+      // Nuclear: Core Temp and Neutron Flux
+      const targetTemp = isOnline ? 280 + outputRatio * 60 : 65;
+      gen.simMetrics.primaryParamValue += (targetTemp - gen.simMetrics.primaryParamValue) * 0.05;
+      gen.simMetrics.secondaryParamValue = isOnline ? outputRatio * 100 : 0;
+    } else if (gen.type === 'hydro') {
+      // Hydro: Water Flow and Head Height
+      const targetFlow = isOnline ? outputRatio * 520 : 0;
+      gen.simMetrics.primaryParamValue += (targetFlow - gen.simMetrics.primaryParamValue) * 0.1;
+      gen.simMetrics.secondaryParamValue = Math.max(120, 150 - (gen.simMetrics.primaryParamValue / 500) * 15);
+    } else if (gen.type === 'solar_pv') {
+      // Solar: Irradiance and Inverter Temp
+      const targetIrradiance = isOnline ? 700 + outputRatio * 350 : 0;
+      gen.simMetrics.primaryParamValue += (targetIrradiance - gen.simMetrics.primaryParamValue) * 0.08;
+      gen.simMetrics.secondaryParamValue = isOnline ? 35 + outputRatio * 25 : 24;
+    } else if (gen.type === 'wind') {
+      // Wind: Wind Velocity and Rotor RPM
+      const targetWind = isOnline ? 6 + outputRatio * 9 : 0;
+      gen.simMetrics.primaryParamValue += (targetWind - gen.simMetrics.primaryParamValue) * 0.08;
+      gen.simMetrics.secondaryParamValue = isOnline ? (gen.simMetrics.primaryParamValue / 15) * 22 : 0;
+    }
+  }
+
   totalGenMW = newGenerators.reduce((sum, g) => sum + (g.status === 'online' ? g.curMW : 0), 0);
 
-  // 3. Compute net bus injection per substation
-  // Generators and Loads feed into substations (via direct lines or connectedBusId)
+  // 4. Net bus injections
   const netInjections = new Map<string, number>();
   newSubstations.forEach(s => netInjections.set(s.id, 0));
 
-  // Direct injection from connected generators
   for (const gen of newGenerators) {
     if (gen.status === 'online' && netInjections.has(gen.connectedBusId)) {
       netInjections.set(
@@ -219,7 +213,6 @@ export function stepSimulation(
     }
   }
 
-  // Withdrawals from connected loads
   for (const load of newLoads) {
     if (!load.isShed && netInjections.has(load.connectedBusId)) {
       netInjections.set(
@@ -229,20 +222,17 @@ export function stepSimulation(
     }
   }
 
-  // 4. Solve power flow on transmission lines
+  // 5. Solve power flow
   const { busAngles, lineFlows } = solveDCPowerFlow(newSubstations, newLines, netInjections);
 
-  // Apply angles to substations
   newSubstations.forEach(sub => {
     sub.voltageAngleRad = busAngles.get(sub.id) || 0;
   });
 
-  // Apply calculated flows and check line overloads
   let netLosses = 0;
   for (const line of newLines) {
     const calc = lineFlows.get(line.id);
     if (calc) {
-      // If line is direct generator feeder or load feeder, represent directly
       const genFeed = newGenerators.find(g => g.id === line.fromNodeId);
       const loadFeed = newLoads.find(l => l.id === line.toNodeId);
 
@@ -259,7 +249,6 @@ export function stepSimulation(
 
       netLosses += line.lossMW;
 
-      // Check thermal limits
       const utilization = Math.abs(line.curFlowMW) / line.thermalLimitMW;
       if (!line.isTripped && utilization > 1.0) {
         line.overloadDuration_s += dt;
@@ -271,7 +260,7 @@ export function stepSimulation(
             id: `trip-${Date.now()}-${line.id}`,
             timestamp: new Date().toLocaleTimeString(),
             type: 'trip',
-            message: `AUTOMATIC OVERLOAD TRIP: ${line.name} [Flow: ${Math.round(utilization * 100)}%] exceeded thermal limit for >3s. Breakers opened!`,
+            message: `AUTOMATIC OVERLOAD TRIP: ${line.name} exceeded thermal limit for >3s. Breakers opened!`,
           });
         }
       } else {
@@ -280,31 +269,22 @@ export function stepSimulation(
     }
   }
 
-  // 5. Dynamic Frequency Physics (Swing Equation & Inertia)
-  // Imbalance = TotalGen - TotalLoad - Losses
+  // 6. Swing Equation
   const netActiveImbalance = totalGenMW - totalDemandMW - netLosses;
-  
-  // Grid Inertia Constant H (typical system 4.0 - 5.5 s)
-  // df/dt = (f_nom / (2 * H * S_base)) * (P_gen - P_load - P_loss) - D * delta_f
-  const H = 4.5; // Inertia constant (seconds)
-  const D = 0.8; // System damping constant (MW/Hz)
-  const S_base = 3500; // Base apparent power in MVA
+  const H = 4.5;
+  const D = 0.8;
+  const S_base = 3500;
 
   const freqDelta = telemetry.frequencyHz - telemetry.nominalFreqHz;
   const df_dt = ((telemetry.nominalFreqHz / (2 * H * S_base)) * netActiveImbalance) - (D * freqDelta / H);
   
-  // Smoothly update frequency
   let newFrequency = telemetry.frequencyHz + df_dt * dt;
-
-  // Add minute realistic sensor jitter (micro-fluctuations +/- 0.008 Hz)
   const jitter = (Math.random() - 0.5) * 0.006;
   newFrequency = Math.max(45.0, Math.min(55.0, newFrequency + jitter));
 
-  // 6. Under-Frequency Load Shedding (UFLS) Trigger:
-  // If frequency drops below 48.5 Hz (or 58.5 in 60Hz system), shed lowest priority load immediately!
+  // 7. Under-Frequency Load Shedding (UFLS)
   const uflsThreshold = telemetry.nominalFreqHz - 1.5;
   if (newFrequency < uflsThreshold) {
-    // Find highest tier load (3 = industrial shed first, then 2, etc.)
     const eligibleLoads = newLoads
       .filter(l => !l.isShed)
       .sort((a, b) => b.priorityTier - a.priorityTier);
@@ -317,12 +297,11 @@ export function stepSimulation(
         id: `ufls-${Date.now()}-${shedTarget.id}`,
         timestamp: new Date().toLocaleTimeString(),
         type: 'alert',
-        message: `EMERGENCY UFLS TRIGGERED (Freq: ${newFrequency.toFixed(2)} Hz): Shed load at ${shedTarget.name} [Tier ${shedTarget.priorityTier}] to avert blackout!`,
+        message: `EMERGENCY UFLS TRIGGERED (Freq: ${newFrequency.toFixed(2)} Hz): Shed load at ${shedTarget.name} to avert blackout!`,
       });
     }
   }
 
-  // Update substation active throughput
   newSubstations.forEach(sub => {
     let throughput = 0;
     newLines.forEach(l => {
