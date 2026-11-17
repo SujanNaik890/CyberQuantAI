@@ -1,7 +1,7 @@
 import { Generator, Substation, LoadCenter, TransmissionLine, GridScenario } from './gridModel';
 
 export function getInitialScenario(): GridScenario {
-  // Real Regional Power Generation Sources feeding Bengaluru Metropolitan Region
+  // Spaced out coordinates with high visual clearance for each generation site and substation
   const generators: Generator[] = [
     {
       id: 'GEN-NUC-KAIGA',
@@ -16,11 +16,11 @@ export function getInitialScenario(): GridScenario {
       marginalCost_MWh: 21.0,
       status: 'online',
       connectedBusId: 'SUB-NELAMANGALA-400',
-      location: 'Karwar, Western Ghats',
+      location: 'Karwar, Western Ghats Plateau, Karnataka',
       lat: 14.8647,
       lng: 74.4392,
-      x: -50,
-      y: 35,
+      x: -95,
+      y: 65,
       simMetrics: {
         efficiency: 94.6,
         primaryParamName: 'PHWR Core Temp',
@@ -44,11 +44,11 @@ export function getInitialScenario(): GridScenario {
       marginalCost_MWh: 8.5,
       status: 'online',
       connectedBusId: 'SUB-NELAMANGALA-400',
-      location: 'Jog Falls, Shivamogga',
+      location: 'Jog Falls, Linganamakki Reservoir, Shivamogga',
       lat: 14.2333,
       lng: 74.8000,
-      x: -30,
-      y: 40,
+      x: -35,
+      y: 85,
       simMetrics: {
         efficiency: 93.2,
         primaryParamName: 'Penstock Water Flow',
@@ -72,11 +72,11 @@ export function getInitialScenario(): GridScenario {
       marginalCost_MWh: 4.2,
       status: 'online',
       connectedBusId: 'SUB-DEVANAHALLI-400',
-      location: 'Pavagada, Tumakuru',
+      location: 'Pavagada Solar Corridor, Tumakuru District',
       lat: 14.0950,
       lng: 77.2667,
-      x: 10,
-      y: 45,
+      x: 45,
+      y: 80,
       simMetrics: {
         efficiency: 23.4,
         primaryParamName: 'Deccan Solar Irradiance',
@@ -100,11 +100,11 @@ export function getInitialScenario(): GridScenario {
       marginalCost_MWh: 5.1,
       status: 'online',
       connectedBusId: 'SUB-NELAMANGALA-400',
-      location: 'Gadag Plateau',
+      location: 'Kappatagudda Hills & Ridge, Gadag District',
       lat: 15.3000,
       lng: 75.6500,
-      x: -40,
-      y: 50,
+      x: 105,
+      y: 60,
       simMetrics: {
         efficiency: 48.0,
         primaryParamName: 'Plateau Wind Velocity',
@@ -117,7 +117,7 @@ export function getInitialScenario(): GridScenario {
     },
   ];
 
-  // Key KPTCL / PGCIL Bulk Transmission Substations & Transformers Ring around Bengaluru
+  // Substations positioned intermediate between plants and city
   const substations: Substation[] = [
     {
       id: 'SUB-NELAMANGALA-400',
@@ -127,11 +127,11 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 1450,
       voltageAngleRad: 0,
-      location: 'North-West Gate, NH48',
+      location: 'North-West Gateway, NH48, Nelamangala Rural',
       lat: 13.0988,
       lng: 77.3912,
-      x: -18,
-      y: 12,
+      x: -45,
+      y: 15,
       distributionTransformers: 12,
     },
     {
@@ -142,11 +142,11 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 920,
       voltageAngleRad: 0,
-      location: 'North Corridor / Kempegowda Intl Airport',
+      location: 'Kempegowda International Airport Power Belt',
       lat: 13.2450,
       lng: 77.7126,
-      x: 18,
-      y: 18,
+      x: 45,
+      y: 20,
       distributionTransformers: 8,
     },
     {
@@ -157,11 +157,11 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 980,
       voltageAngleRad: 0,
-      location: 'East Tech Hub, Whitefield corridor',
+      location: 'Hoodi Industrial Area, Whitefield Power Corridor',
       lat: 12.9912,
       lng: 77.7144,
-      x: 14,
-      y: -5,
+      x: 55,
+      y: -30,
       distributionTransformers: 16,
     },
     {
@@ -172,31 +172,47 @@ export function getInitialScenario(): GridScenario {
       busStatus: 'energized',
       activeThroughputMW: 1120,
       voltageAngleRad: 0,
-      location: 'South Ring / Kanakapura Road',
+      location: 'Kanakapura Highway, Southern Outer Ring',
       lat: 12.7844,
       lng: 77.4988,
-      x: -10,
-      y: -18,
+      x: -45,
+      y: -45,
       distributionTransformers: 14,
     },
   ];
 
-  // Major Metropolitan Demand Hubs inside Bengaluru (BESCOM Distribution Zones)
+  // Metropolitan Demand Centers clustered in Bengaluru Urban
   const loads: LoadCenter[] = [
+    {
+      id: 'LOAD-BLR-CBD',
+      name: 'Central Business District & Metro Core',
+      type: 'residential',
+      baseDemandMW: 850,
+      curDemandMW: 850,
+      priorityTier: 1,
+      isShed: false,
+      connectedBusId: 'SUB-NELAMANGALA-400',
+      location: 'MG Road, Vidhana Soudha, Indiranagar, Bengaluru Central',
+      lat: 12.9716,
+      lng: 77.5946,
+      x: 0,
+      y: -10,
+      buildingCount: 110,
+    },
     {
       id: 'LOAD-BLR-WHITEFIELD',
       name: 'Whitefield & ITPL Tech Hub',
       type: 'commercial',
       baseDemandMW: 720,
       curDemandMW: 720,
-      priorityTier: 1, // Critical Server Farms & IT campuses
+      priorityTier: 1,
       isShed: false,
       connectedBusId: 'SUB-HOODI-220',
-      location: 'ITPL, EPIP Zone, Whitefield',
+      location: 'International Tech Park (ITPL), EPIP Zone, Whitefield',
       lat: 12.9863,
       lng: 77.7308,
-      x: 20,
-      y: -2,
+      x: 80,
+      y: -15,
       buildingCount: 64,
     },
     {
@@ -208,28 +224,12 @@ export function getInitialScenario(): GridScenario {
       priorityTier: 2,
       isShed: false,
       connectedBusId: 'SUB-SOMANAHALLI-400',
-      location: 'Hosur Road Tech Corridor',
+      location: 'Hosur Road Elevated Expressway Tech District',
       lat: 12.8452,
       lng: 77.6602,
-      x: 6,
-      y: -16,
+      x: 15,
+      y: -55,
       buildingCount: 78,
-    },
-    {
-      id: 'LOAD-BLR-CBD',
-      name: 'Central Business District & Metro Core',
-      type: 'residential',
-      baseDemandMW: 850,
-      curDemandMW: 850,
-      priorityTier: 1, // Vidhana Soudha, Hospitals, MG Road, Namma Metro
-      isShed: false,
-      connectedBusId: 'SUB-NELAMANGALA-400',
-      location: 'MG Road, Majestic, Indiranagar',
-      lat: 12.9716,
-      lng: 77.5946,
-      x: 0,
-      y: 0,
-      buildingCount: 110,
     },
     {
       id: 'LOAD-BLR-PEENYA',
@@ -237,21 +237,20 @@ export function getInitialScenario(): GridScenario {
       type: 'industrial',
       baseDemandMW: 550,
       curDemandMW: 550,
-      priorityTier: 3, // Heavy manufacturing & fabrication (shed first in deficit)
+      priorityTier: 3,
       isShed: false,
       connectedBusId: 'SUB-NELAMANGALA-400',
-      location: 'Peenya 1st - 4th Stage',
+      location: 'Peenya Industrial Area Stage 1 to 4, Tumkur Road',
       lat: 13.0285,
       lng: 77.5186,
-      x: -10,
-      y: 5,
+      x: -55,
+      y: -5,
       buildingCount: 92,
     },
   ];
 
-  // High-Voltage 400kV and 220kV Transmission Corridors into Bengaluru City
+  // Corridors connecting Generation -> Transmission -> Substations -> Bengaluru
   const lines: TransmissionLine[] = [
-    // 400kV Western Regional Supply into Nelamangala
     {
       id: 'TL-400-KAIGA-NELA',
       name: 'Kaiga - Nelamangala 400kV D/C Line 1',
@@ -295,10 +294,10 @@ export function getInitialScenario(): GridScenario {
       overloadDuration_s: 0,
     },
     {
-      id: 'TL-220-GADAG-NELA',
-      name: 'Gadag Wind - Nelamangala 220kV Feeder',
+      id: 'TL-220-GADAG-DEV',
+      name: 'Gadag Wind - Devanahalli 220kV Feeder',
       fromNodeId: 'GEN-WND-GADAG',
-      toNodeId: 'SUB-NELAMANGALA-400',
+      toNodeId: 'SUB-DEVANAHALLI-400',
       voltageKV: 220,
       reactance_X: 0.09,
       resistance_R: 0.009,
@@ -308,8 +307,6 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-
-    // Bengaluru 400kV / 220kV Outer Transmission Ring
     {
       id: 'TL-RING-NELA-DEV',
       name: 'Northern Ring: Nelamangala - Devanahalli 400kV',
@@ -366,8 +363,6 @@ export function getInitialScenario(): GridScenario {
       lossMW: 0,
       overloadDuration_s: 0,
     },
-
-    // In-City BESCOM Distribution Lines
     {
       id: 'TL-FEED-HOODI-WHITEFIELD',
       name: 'Hoodi - Whitefield ITPL 66kV Underground Feed',
