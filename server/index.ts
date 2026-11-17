@@ -94,6 +94,19 @@ app.post('/api/grid-state', (req, res) => {
   res.json({ status: 'synchronized' });
 });
 
+// Expose grid state to AI assistant and services
+app.get('/api/grid-state', (req, res) => {
+  res.json(latestGridState || {
+    frequencyHz: 50.00,
+    totalGenMW: 3265,
+    totalDemandMW: 2800,
+    generators: [],
+    substations: [],
+    loads: [],
+    lines: []
+  });
+});
+
 // Ingest Cyber Security Event (Attacker or SIEM ingress)
 app.post('/api/events', (req, res) => {
   try {
