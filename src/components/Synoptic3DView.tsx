@@ -3,8 +3,16 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGridStore } from '../store/gridStore';
+import { useCyberStore } from '../store/cyberStore';
 import { Generator, Substation, LoadCenter, TransmissionLine } from '../engine/gridModel';
-import { MapPin, Zap, Activity, Thermometer, Waves, Sun, Wind, Building, Factory } from 'lucide-react';
+import { MapPin, Zap, Activity, Thermometer, Waves, Sun, Wind, Building, Factory, ShieldAlert } from 'lucide-react';
+
+// Helper to determine risk highlight color: red for compromised, orange for suspicious, default for normal
+const getRiskColor = (status: 'normal' | 'suspicious' | 'compromised' | undefined, fallback: string) => {
+  if (status === 'compromised') return '#f43f5e';
+  if (status === 'suspicious') return '#f59e0b';
+  return fallback;
+};
 
 // ==================== 1. 3D GENERATOR MODELS (LARGER & VISIBLE) ====================
 
@@ -18,6 +26,8 @@ const NuclearModel: React.FC<{
   const steamRef = useRef<THREE.Group>(null);
   const isOnline = gen.status === 'online';
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[gen.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[gen.id]?.riskScore);
 
   useFrame((_, delta) => {
     if (steamRef.current && isOnline) {
@@ -56,11 +66,11 @@ const NuclearModel: React.FC<{
       <mesh position={[0, 4.0, 0]} castShadow>
         <sphereGeometry args={[5.0, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshStandardMaterial 
-          color={isSelected ? '#38bdf8' : isOnline ? '#0ea5e9' : '#64748b'} 
+          color={isSelected ? '#38bdf8' : riskStatus === 'compromised' ? '#f43f5e' : riskStatus === 'suspicious' ? '#f59e0b' : isOnline ? '#0ea5e9' : '#64748b'} 
           roughness={0.2} 
           metalness={0.8} 
-          emissive={isSelected ? '#0284c7' : isOnline ? '#0369a1' : '#000000'}
-          emissiveIntensity={0.4}
+          emissive={riskStatus === 'compromised' ? '#e11d48' : isSelected ? '#0284c7' : isOnline ? '#0369a1' : '#000000'}
+          emissiveIntensity={riskStatus === 'compromised' ? 0.8 : 0.4}
         />
       </mesh>
 
@@ -101,12 +111,23 @@ const NuclearModel: React.FC<{
 
       {/* High-visibility Title Pin */}
       <Html position={[0, 11, 0]} center distanceFactor={70}>
-        <div className="bg-[#070e1b]/95 border-2 border-cyan-400 px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(56,189,248,0.5)]">
+        <div className={`px-3 py-1.5 rounded-lg text-center font-mono pointer-events-none select-none shadow-[0_0_15px_rgba(56,189,248,0.5)] ${
+          riskStatus === 'compromised'
+            ? 'bg-rose-950/95 border-2 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            : riskStatus === 'suspicious'
+            ? 'bg-amber-950/95 border-2 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.7)]'
+            : 'bg-[#070e1b]/95 border-2 border-cyan-400'
+        }`}>
           <div className="text-xs text-cyan-300 font-bold whitespace-nowrap flex items-center gap-1 justify-center">
-            <Zap className="w-3.5 h-3.5 text-cyan-400" /> {gen.name}
+            {riskStatus === 'compromised' ? (
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+            ) : (
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+            )}
+            <span className={riskStatus === 'compromised' ? 'text-rose-200' : ''}>{gen.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 font-semibold">
-            {isOnline ? `${Math.round(gen.curMW)} MW • 400kV Kaiga` : 'OFFLINE'}
+            {riskStatus ? `BREACH ALERT • RISK ${riskScore}/100` : isOnline ? `${Math.round(gen.curMW)} MW • 400kV Kaiga` : 'OFFLINE'}
           </div>
         </div>
       </Html>
@@ -383,6 +404,8 @@ const SubstationModel: React.FC<{
   onLeave: () => void;
 }> = ({ sub, isSelected, onHover, onLeave }) => {
   const selectAsset = useGridStore((s) => s.selectAsset);
+  const riskStatus = useCyberStore((s) => s.assetRiskMap[sub.id]?.status);
+  const riskScore = useCyberStore((s) => s.assetRiskMap[sub.id]?.riskScore);
 
   return (
     <group 
@@ -406,11 +429,21 @@ const SubstationModel: React.FC<{
       {/* 400kV Bulk Autotransformers */}
       <mesh position={[-2.5, 2.5, 0]}>
         <boxGeometry args={[3.5, 5.0, 4.5]} />
-        <meshStandardMaterial color="#475569" metalness={0.8} />
+        <meshStandardMaterial 
+          color={riskStatus === 'compromised' ? '#f43f5e' : riskStatus === 'suspicious' ? '#f59e0b' : '#475569'} 
+          metalness={0.8} 
+          emissive={riskStatus === 'compromised' ? '#e11d48' : '#000000'}
+          emissiveIntensity={riskStatus === 'compromised' ? 0.7 : 0}
+        />
       </mesh>
       <mesh position={[2.5, 2.5, 0]}>
         <boxGeometry args={[3.5, 5.0, 4.5]} />
-        <meshStandardMaterial color="#475569" metalness={0.8} />
+        <meshStandardMaterial 
+          color={riskStatus === 'compromised' ? '#f43f5e' : riskStatus === 'suspicious' ? '#f59e0b' : '#475569'} 
+          metalness={0.8} 
+          emissive={riskStatus === 'compromised' ? '#e11d48' : '#000000'}
+          emissiveIntensity={riskStatus === 'compromised' ? 0.7 : 0}
+        />
       </mesh>
 
       {/* Ceramic Bushings & Lightning Arrestors */}

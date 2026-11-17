@@ -1,14 +1,56 @@
 import React, { useEffect, useRef } from 'react';
 import { useGridStore } from './store/gridStore';
+import { useCyberStore } from './store/cyberStore';
+import { initCyberWebSocket } from './services/cyberWebSocket';
 import { TopHeader } from './components/TopHeader';
 import { LeftSidebar } from './components/LeftSidebar';
 import { SynopticCanvas } from './components/SynopticCanvas';
 import { TelemetryTable } from './components/TelemetryTable';
 import { InspectorPanel } from './components/InspectorPanel';
+import { CyberNavBar } from './components/cyber/CyberNavBar';
+import { RiskDetectionPanel } from './components/cyber/RiskDetectionPanel';
+import { RiskAlertsPanel } from './components/cyber/RiskAlertsPanel';
+import { FinancialAnalyzer } from './components/cyber/FinancialAnalyzer';
+import { LossAnalysisDashboard } from './components/cyber/LossAnalysisDashboard';
+import { AIChatPanel } from './components/cyber/AIChatPanel';
 
 export function App() {
   const tick = useGridStore((s) => s.tick);
+  const activeNavTab = useCyberStore((s) => s.activeNavTab);
+  const fetchInitialData = useCyberStore((s) => s.fetchInitialData);
   const lastTimeRef = useRef<number>(performance.now());
+
+  // Connect to CyberQuant WebSocket and fetch initial state
+  useEffect(() => {
+    fetchInitialData();
+    const disconnectWS = initCyberWebSocket();
+    return () => {
+      disconnectWS?.();
+    };
+  }, [fetchInitialData]);
+
+  // Push grid state to backend every 3 seconds for risk engine correlation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const grid = useGridStore.getState();
+      const host = window.location.hostname || 'localhost';
+      fetch(`http://${host}:3001/api/grid-state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          frequencyHz: grid.telemetry.frequencyHz,
+          totalGenMW: grid.telemetry.totalGenMW,
+          totalDemandMW: grid.telemetry.totalDemandMW,
+          generators: grid.generators,
+          substations: grid.substations,
+          loads: grid.loads,
+          lines: grid.lines,
+        }),
+      }).catch(() => {});
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Real-time 60 FPS physics tick loop
   useEffect(() => {
@@ -34,19 +76,32 @@ export function App() {
       {/* 1. Cockpit Top Header */}
       <TopHeader />
 
-      {/* 2. Cockpit 3-Panel Main Area */}
+      {/* 2. CyberQuant Navigation Strip */}
+      <CyberNavBar />
+
+      {/* 3. Main Dynamic Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Dispatch & Asset Sector Sidebar */}
-        <LeftSidebar />
+        {activeNavTab === 'grid' && (
+          <>
+            {/* Left Dispatch & Asset Sector Sidebar */}
+            <LeftSidebar />
 
-        {/* Center Viewport: Upper Synoptic Canvas + Lower Branch Telemetry Table */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#050b14] overflow-hidden">
-          <SynopticCanvas />
-          <TelemetryTable />
-        </main>
+            {/* Center Viewport: Upper Synoptic Canvas + Lower Branch Telemetry Table */}
+            <main className="flex-1 flex flex-col min-w-0 bg-[#050b14] overflow-hidden">
+              <SynopticCanvas />
+              <TelemetryTable />
+            </main>
 
-        {/* Right Station Inspector, Dynamic Oscilloscope & Event Log */}
-        <InspectorPanel />
+            {/* Right Station Inspector, Dynamic Oscilloscope & Event Log */}
+            <InspectorPanel />
+          </>
+        )}
+
+        {activeNavTab === 'detection' && <RiskDetectionPanel />}
+        {activeNavTab === 'alerts' && <RiskAlertsPanel />}
+        {activeNavTab === 'financial' && <FinancialAnalyzer />}
+        {activeNavTab === 'analytics' && <LossAnalysisDashboard />}
+        {activeNavTab === 'ai' && <AIChatPanel />}
       </div>
     </div>
   );

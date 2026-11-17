@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGridStore } from '../store/gridStore';
+import { NotificationBell } from './cyber/NotificationBell';
 import { 
   Activity, 
   Zap, 
@@ -193,6 +194,9 @@ export const TopHeader: React.FC = () => {
         >
           <Download className="w-4 h-4" />
         </button>
+
+        {/* Cyber Threat Notification Bell */}
+        <NotificationBell />
 
         {/* Master Contingency Injection Button */}
         <button
