@@ -13,12 +13,13 @@ import {
   CheckCircle2, 
   Radio, 
   ChevronRight, 
-  Crosshair,
-  TrendingUp,
-  DollarSign,
-  AlertOctagon,
-  RefreshCw,
-  Terminal
+  Crosshair, 
+  TrendingUp, 
+  DollarSign, 
+  AlertOctagon, 
+  RefreshCw, 
+  RotateCcw,
+  Terminal 
 } from 'lucide-react';
 
 interface AttackTypeDef {
@@ -203,21 +204,38 @@ export const AttackEnginePanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Real-time Financial Exposure Snapshot */}
-        <div className="flex items-center gap-4 bg-[#0a1324] px-4 py-2.5 rounded-lg border border-[#1e293b] font-mono text-xs">
-          <div>
-            <div className="text-[10px] text-slate-400 uppercase">Live Total Exposure</div>
-            <div className="text-sm font-bold text-rose-400">
-              ₹{(financialSummary.totalFinancialExposure / 10000000).toFixed(2)} Cr
+        {/* Real-time Financial Exposure Snapshot & Corner Reset Icon */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 bg-[#0a1324] px-4 py-2 rounded-lg border border-[#1e293b] font-mono text-xs">
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase">Live Total Exposure</div>
+              <div className="text-sm font-bold text-rose-400">
+                ₹{(financialSummary.totalFinancialExposure / 10000000).toFixed(2)} Cr
+              </div>
+            </div>
+            <div className="h-8 w-px bg-slate-800" />
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase">Active Risk Alerts</div>
+              <div className="text-sm font-bold text-amber-400 flex items-center gap-1">
+                <AlertOctagon className="w-3.5 h-3.5 text-amber-400" /> {alerts.length}
+              </div>
             </div>
           </div>
-          <div className="h-8 w-px bg-slate-800" />
-          <div>
-            <div className="text-[10px] text-slate-400 uppercase">Active Risk Alerts</div>
-            <div className="text-sm font-bold text-amber-400 flex items-center gap-1">
-              <AlertOctagon className="w-3.5 h-3.5 text-amber-400" /> {alerts.length}
-            </div>
-          </div>
+
+          {/* Minimal Corner Reset Symbol Button */}
+          <button
+            onClick={async () => {
+              const resetGrid = useGridStore.getState().resetGrid;
+              resetGrid();
+              const resetAll = useCyberStore.getState().resetAllGridAndAttacks;
+              await resetAll();
+              setLastExecutionResult(null);
+            }}
+            title="Reset All Attacks & Grid to Normal Baseline"
+            className="p-2.5 rounded-lg bg-[#0c162a] border border-[#1e293b] text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 hover:bg-cyan-950/20 transition-all flex items-center justify-center shadow-sm"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
