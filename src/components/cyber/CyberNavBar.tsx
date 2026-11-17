@@ -36,18 +36,6 @@ export const CyberNavBar: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setNavTab('detection')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
-            activeNavTab === 'detection'
-              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(56,189,248,0.25)]'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Terminal className="w-3.5 h-3.5" />
-          <span>EVENT TELEMETRY</span>
-        </button>
-
-        <button
           onClick={() => setNavTab('alerts')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all relative ${
             activeNavTab === 'alerts'
