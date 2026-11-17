@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useGridStore } from '../store/gridStore';
-import { Box, Layers, MapPin } from 'lucide-react';
+import { Box, Layers, MapPin, Maximize, Minimize } from 'lucide-react';
 import { Synoptic3DView } from './Synoptic3DView';
 import { RegionalMapGeoView } from './RegionalMapGeoView';
 
@@ -17,6 +17,7 @@ export const SynopticCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [viewMode, setViewMode] = useState<'3D' | 'MAP' | '2D'>('3D');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const generators = useGridStore((s) => s.generators);
   const substations = useGridStore((s) => s.substations);
@@ -30,6 +31,28 @@ export const SynopticCanvas: React.FC = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const particlesRef = useRef<Particle[]>([]);
+
+  // Toggle browser native fullscreen or fallback overlay
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {
+        setIsFullscreen(true);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen().catch(() => {});
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const getNodeCoord = useCallback(
     (nodeId: string): { x: number; y: number; name: string; type: string } | null => {
@@ -108,7 +131,6 @@ export const SynopticCanvas: React.FC = () => {
       ctx.translate(transform.x, transform.y);
       ctx.scale(transform.scale, transform.scale);
 
-      // Blueprint dot grid
       const gridSize = 10;
       const worldLeft = -transform.x / transform.scale;
       const worldTop = -transform.y / transform.scale;
@@ -124,7 +146,6 @@ export const SynopticCanvas: React.FC = () => {
         }
       }
 
-      // Draw Lines
       lines.forEach((line) => {
         const fromCoord = getNodeCoord(line.fromNodeId);
         const toCoord = getNodeCoord(line.toNodeId);
@@ -161,7 +182,6 @@ export const SynopticCanvas: React.FC = () => {
         }
       });
 
-      // Draw particles
       particlesRef.current.forEach((p) => {
         const line = lines.find((l) => l.id === p.lineId);
         if (!line || line.isTripped) return;
@@ -181,7 +201,6 @@ export const SynopticCanvas: React.FC = () => {
         ctx.fill();
       });
 
-      // Draw Nodes
       [...substations, ...generators, ...loads].forEach((node) => {
         ctx.beginPath();
         ctx.arc(node.x, node.y, 2.2, 0, Math.PI * 2);
@@ -206,7 +225,14 @@ export const SynopticCanvas: React.FC = () => {
   }, [viewMode, generators, substations, loads, lines, transform, selectedAsset, getNodeCoord]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-[54vh] min-h-[380px] bg-[#050b14] overflow-hidden select-none border-b border-[#1e293b]">
+    <div
+      ref={containerRef}
+      className={`relative w-full bg-[#050b14] overflow-hidden select-none border-b border-[#1e293b] transition-all duration-300 ${
+        isFullscreen
+          ? 'fixed inset-0 z-[9999] h-screen w-screen border-none'
+          : 'h-[56vh] min-h-[380px]'
+      }`}
+    >
       {/* 3D vs MAP vs 2D Render Mode */}
       {viewMode === '3D' ? (
         <Synoptic3DView />
@@ -226,8 +252,8 @@ export const SynopticCanvas: React.FC = () => {
         />
       )}
 
-      {/* Mode Switcher Pills (Top Left) */}
-      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#070e1b]/90 backdrop-blur-md p-1 rounded-lg border border-[#1e293b] font-mono text-xs z-[1001] shadow-xl">
+      {/* Top Left View Switcher Pills */}
+      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#070e1b]/95 backdrop-blur-md p-1 rounded-lg border border-[#1e293b] font-mono text-xs z-[1001] shadow-xl">
         <button
           onClick={() => setViewMode('3D')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all font-semibold ${
@@ -260,9 +286,30 @@ export const SynopticCanvas: React.FC = () => {
         </button>
       </div>
 
-      {/* 3D Controls Hint */}
+      {/* Top Right Fullscreen Button */}
+      <div className="absolute top-3 right-3 flex items-center gap-2 z-[1001]">
+        <button
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen View"}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070e1b]/95 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-semibold shadow-xl transition-all active:scale-95 hover:border-cyan-400"
+        >
+          {isFullscreen ? (
+            <>
+              <Minimize className="w-4 h-4 text-cyan-400" />
+              <span>EXIT FULLSCREEN</span>
+            </>
+          ) : (
+            <>
+              <Maximize className="w-4 h-4 text-cyan-400" />
+              <span>FULLSCREEN SIMULATION</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* 3D Navigation Controls Hint */}
       {viewMode === '3D' && (
-        <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-2 bg-[#070e1b]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1e293b] font-mono text-[11px] text-slate-400 z-10">
+        <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-2 bg-[#070e1b]/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1e293b] font-mono text-[11px] text-slate-400 z-10 shadow-lg">
           <span className="text-cyan-400 font-bold">3D Orbit:</span> Left-Click + Drag to Rotate • Right-Click to Pan • Scroll to Zoom
         </div>
       )}
