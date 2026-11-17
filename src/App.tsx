@@ -22,24 +22,25 @@ export function App() {
   const fetchInitialData = useCyberStore((s) => s.fetchInitialData);
   const lastTimeRef = useRef<number>(performance.now());
 
-  // URL / Route synchronization: Supports direct links such as http://localhost:5173/attacks or #/attacks
+  const [routeHash, setRouteHash] = React.useState(() => window.location.hash.toLowerCase() || window.location.pathname.toLowerCase());
+
+  // URL / Route synchronization: Supports direct links such as http://localhost:5173/#attacks
   useEffect(() => {
     const handleLocationChange = () => {
       const path = window.location.pathname.replace(/^\//, '').toLowerCase();
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-      const route = hash || path;
+      const current = hash || path;
+      setRouteHash(window.location.hash.toLowerCase() || window.location.pathname.toLowerCase());
 
-      if (route === 'attack' || route === 'attacks' || route === 'attack-engine') {
-        setNavTab('attacks');
-      } else if (route === 'alerts' || route === 'risk-alerts') {
+      if (current === 'alerts' || current === 'risk-alerts') {
         setNavTab('alerts');
-      } else if (route === 'financial' || route === 'financial-impact') {
+      } else if (current === 'financial' || current === 'financial-impact') {
         setNavTab('financial');
-      } else if (route === 'analytics' || route === 'loss-analytics') {
+      } else if (current === 'analytics' || current === 'loss-analytics') {
         setNavTab('analytics');
-      } else if (route === 'ai' || route === 'assistant') {
+      } else if (current === 'ai' || current === 'assistant') {
         setNavTab('ai');
-      } else if (route === 'grid' || route === '') {
+      } else if (current === 'grid' || current === '') {
         setNavTab('grid');
       }
     };
@@ -104,6 +105,17 @@ export function App() {
     };
   }, [tick]);
 
+  // URL / Route check: If URL is #attacks, render the dedicated standalone Attack Engine view
+  const isAttackPage = routeHash.includes('attack');
+
+  if (isAttackPage) {
+    return (
+      <div className="flex flex-col h-screen w-screen bg-[#040812] text-slate-100 overflow-hidden font-sans">
+        <AttackEnginePanel />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen w-screen bg-[#050b14] text-slate-100 overflow-hidden font-sans">
       {/* 1. Cockpit Top Header */}
@@ -129,7 +141,6 @@ export function App() {
           </>
         )}
 
-        {activeNavTab === 'attacks' && <AttackEnginePanel />}
         {activeNavTab === 'detection' && <RiskDetectionPanel />}
         {activeNavTab === 'alerts' && <RiskAlertsPanel />}
         {activeNavTab === 'financial' && <FinancialAnalyzer />}

@@ -98,7 +98,6 @@ export const AttackEnginePanel: React.FC = () => {
 
   const assetRiskMap = useCyberStore((s) => s.assetRiskMap);
   const launchCustomAttack = useCyberStore((s) => s.launchCustomAttack);
-  const setNavTab = useCyberStore((s) => s.setNavTab);
   const financialSummary = useCyberStore((s) => s.financialSummary);
   const alerts = useCyberStore((s) => s.alerts);
 
@@ -399,10 +398,17 @@ export const AttackEnginePanel: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setNavTab('grid')}
+                onClick={() => {
+                  if (window.opener) {
+                    window.opener.focus();
+                  } else {
+                    window.open(`${window.location.origin}/#grid`, '_blank');
+                  }
+                }}
                 className="px-4 py-2.5 rounded-lg bg-[#0c162a] border border-[#1e293b] hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all"
+                title="View in main CyberQuant 3D Grid tab"
               >
-                <span>3D SIMULATION VIEW</span>
+                <span>OPEN 3D GRID TAB</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -429,12 +435,9 @@ export const AttackEnginePanel: React.FC = () => {
                     {lastExecutionResult.financial && (
                       <div className="flex items-center justify-between pt-1 border-t border-rose-900/60 text-[11px]">
                         <span>Projected Loss: ₹{(lastExecutionResult.financial.totalEstimatedLoss / 10000000).toFixed(2)} Cr</span>
-                        <button
-                          onClick={() => setNavTab('alerts')}
-                          className="text-cyan-400 hover:underline font-bold"
-                        >
-                          View in Risk Alerts →
-                        </button>
+                        <span className="text-cyan-400 font-mono text-[10px]">
+                          Synchronized to Grid & Risk Alerts
+                        </span>
                       </div>
                     )}
                   </div>

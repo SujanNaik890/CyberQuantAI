@@ -181,14 +181,14 @@ export const TopHeader: React.FC = () => {
 
       {/* Control Actions */}
       <div className="flex items-center gap-2">
-        {/* Launch Dedicated Attack Console in Separate Window */}
+        {/* Red Circular Attack Engine Trigger Button */}
         <button
           onClick={openDedicatedAttackConsole}
-          title="Open Dedicated Adversary Attack Engine in a Separate Window"
-          className="px-2.5 py-1.5 rounded bg-red-950/40 border border-red-500/50 text-red-300 hover:bg-red-900/50 hover:text-red-200 transition-all flex items-center gap-1.5 font-mono text-xs shadow-sm hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+          title="Launch Adversary Attack Engine (Opens in Separate Tab)"
+          className="relative group flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-red-600 via-rose-600 to-red-800 border-2 border-red-400/80 shadow-[0_0_15px_rgba(239,68,68,0.7)] hover:shadow-[0_0_22px_rgba(239,68,68,1)] hover:scale-105 active:scale-95 transition-all text-white cursor-pointer"
         >
-          <Crosshair className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-          <span className="font-semibold">ATTACK CONSOLE ↗</span>
+          <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping pointer-events-none" />
+          <Crosshair className="w-4 h-4 text-white animate-pulse relative z-10" />
         </button>
 
         {/* Play/Pause */}
