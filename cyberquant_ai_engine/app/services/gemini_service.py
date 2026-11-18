@@ -141,7 +141,7 @@ class GeminiService:
                     )
 
                 fut = executor.submit(_invoke)
-                res = fut.result(timeout=6.0)
+                res = fut.result(timeout=14.0)
                 executor.shutdown(wait=False)
 
                 if res and res.text:
@@ -220,29 +220,41 @@ class GeminiService:
         """
         user_clean = user_message.lower().strip()
 
-        # Specific cyber attack keywords
+        # If frontend passes structured live telemetry context, isolate the query for matching
+        query_text = user_clean
+        if "[user query]:" in user_clean:
+            query_text = user_clean.split("[user query]:")[-1].strip()
+
+        # Specific cyber attack keywords & grid attack vectors
         attack_names = [
             "ransomware", "phishing", "ddos", "denial of service", "sql injection", "sqli",
-            "cross-site scripting", "xss", "zero-day", "0-day", "man-in-the-middle", "mitm"
+            "cross-site scripting", "xss", "zero-day", "0-day", "man-in-the-middle", "mitm",
+            "scada", "ics", "modbus", "dnp3", "agc", "blackout", "trojan", "malware",
+            "credential stuffing", "insider threat", "unauthorized insider"
         ]
 
         is_direct_attack_request = bool(context_attack)
         target_attack = context_attack
 
         if not is_direct_attack_request:
-            # Check if query is specifically an attack explanation/report request
+            # Check if query mentions an attack or asks for explanation/analysis/report
             for atk in attack_names:
-                # Matches exact attack name or explicit phrases: "explain ransomware", "analyze sql injection", "ransomware attack"
-                if (user_clean == atk or 
-                    user_clean == f"explain {atk}" or 
-                    user_clean == f"analyze {atk}" or 
-                    f"{atk} attack" in user_clean or
-                    f"{atk} incident" in user_clean or
-                    f"triage {atk}" in user_clean or
-                    user_clean.startswith(f"what is {atk} attack")):
+                if (atk in query_text or 
+                    query_text == atk or 
+                    f"explain {atk}" in query_text or 
+                    f"analyze {atk}" in query_text or 
+                    f"{atk} attack" in query_text or
+                    f"{atk} incident" in query_text or
+                    f"triage {atk}" in query_text or
+                    f"what is {atk}" in query_text):
                     is_direct_attack_request = True
                     target_attack = atk
                     break
+
+            # Also check if user asks to analyze/explain any active detection or highest risk attack
+            if not is_direct_attack_request and ("attack" in query_text or "incident" in query_text or "explain" in query_text or "analysis" in query_text or "report" in query_text):
+                is_direct_attack_request = True
+                target_attack = "ransomware"  # fallback default attack for 8-section report
 
         # If it is explicitly an attack analysis request:
         if is_direct_attack_request and target_attack:
