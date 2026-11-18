@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useGridStore } from './store/gridStore';
 import { useCyberStore } from './store/cyberStore';
+import { BACKEND_URL } from './config/api';
 import { initCyberWebSocket } from './services/cyberWebSocket';
 import { TopHeader } from './components/TopHeader';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -67,8 +68,7 @@ export function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       const grid = useGridStore.getState();
-      const host = window.location.hostname || 'localhost';
-      fetch(`http://${host}:3001/api/grid-state`, {
+      fetch(`${BACKEND_URL}/api/grid-state`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

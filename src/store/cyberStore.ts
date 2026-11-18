@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { BACKEND_URL } from '../config/api';
 import { 
   CyberEvent, 
   RiskAlert, 
@@ -183,7 +184,7 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
 
   acknowledgeAlert: async (alertId) => {
     try {
-      const backendUrl = `http://${window.location.hostname || 'localhost'}:3001/api/alerts/${alertId}/acknowledge`;
+      const backendUrl = `${BACKEND_URL}/api/alerts/${alertId}/acknowledge`;
       await fetch(backendUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -207,14 +208,13 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
   clearAllNotifications: () => set({ notifications: [] }),
 
   fetchInitialData: async () => {
-    const host = window.location.hostname || 'localhost';
     try {
       const [eventsRes, alertsRes, incsRes, risksRes, sumRes] = await Promise.all([
-        fetch(`http://${host}:3001/api/events`).catch(() => null),
-        fetch(`http://${host}:3001/api/alerts`).catch(() => null),
-        fetch(`http://${host}:3001/api/financial/incidents`).catch(() => null),
-        fetch(`http://${host}:3001/api/assets/risk`).catch(() => null),
-        fetch(`http://${host}:3001/api/financial/summary`).catch(() => null),
+        fetch(`${BACKEND_URL}/api/events`).catch(() => null),
+        fetch(`${BACKEND_URL}/api/alerts`).catch(() => null),
+        fetch(`${BACKEND_URL}/api/financial/incidents`).catch(() => null),
+        fetch(`${BACKEND_URL}/api/assets/risk`).catch(() => null),
+        fetch(`${BACKEND_URL}/api/financial/summary`).catch(() => null),
       ]);
 
       if (eventsRes?.ok) {
@@ -293,7 +293,7 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
 
     const payload = SCENARIOS[scenario] || SCENARIOS['kaiga-scada'];
     try {
-      await fetch(`http://${host}:3001/api/events`, {
+      await fetch(`${BACKEND_URL}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -309,7 +309,6 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
   },
 
   launchCustomAttack: async ({ attackType, targetAssetId, sourceIP, description, intensity = 'high' }) => {
-    const host = window.location.hostname || 'localhost';
     const confidenceMap: Record<string, number> = {
       low: 0.65,
       medium: 0.78,
@@ -328,7 +327,7 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
     const finalIP = sourceIP || ipMap[attackType] || '192.168.1.105';
 
     try {
-      const res = await fetch(`http://${host}:3001/api/events`, {
+      const res = await fetch(`${BACKEND_URL}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -373,9 +372,8 @@ export const useCyberStore = create<CyberStore>((set, get) => ({
   },
 
   resetAllGridAndAttacks: async () => {
-    const host = window.location.hostname || 'localhost';
     try {
-      await fetch(`http://${host}:3001/api/reset`, { method: 'POST' });
+      await fetch(`${BACKEND_URL}/api/reset`, { method: 'POST' });
     } catch (err) {
       console.warn('Backend reset call encountered error:', err);
     }

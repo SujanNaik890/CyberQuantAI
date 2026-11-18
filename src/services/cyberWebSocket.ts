@@ -1,5 +1,6 @@
 import { useCyberStore } from '../store/cyberStore';
 import { WSMessage } from '../engine/cyberModels';
+import { WS_URL } from '../config/api';
 
 let socket: WebSocket | null = null;
 let reconnectTimer: any = null;
@@ -7,8 +8,7 @@ let reconnectTimer: any = null;
 export function initCyberWebSocket() {
   if (typeof window === 'undefined') return;
 
-  const host = window.location.hostname || 'localhost';
-  const wsUrl = `ws://${host}:3001`;
+  const wsUrl = WS_URL;
 
   function connect() {
     try {

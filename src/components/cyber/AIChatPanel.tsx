@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCyberStore } from '../../store/cyberStore';
 import { useGridStore } from '../../store/gridStore';
+import { AI_ENGINE_URL } from '../../config/api';
 import { 
   Bot, 
   Send, 
@@ -74,9 +75,9 @@ I am your integrated cyber defense copilot powered by the **CyberQuant AI Decisi
     }
   ]);
 
-  // Check health of teammate's backend
+  // Check health of AI engine backend
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/health')
+    fetch(`${AI_ENGINE_URL}/health`)
       .then((res) => res.json())
       .then((data) => {
         setApiOnline(data.status === 'healthy');
@@ -168,7 +169,7 @@ I am your integrated cyber defense copilot powered by the **CyberQuant AI Decisi
         content: m.content.slice(0, 500),
       }));
 
-      const response = await fetch('http://127.0.0.1:8000/ai/chat', {
+      const response = await fetch(`${AI_ENGINE_URL}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
